@@ -5,6 +5,7 @@
 // #define WINDOWS
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 #include <stdbool.h>
 #ifdef WINDOWS
 #define bool char
@@ -94,21 +95,21 @@ typedef struct node {
  * This global variable is initialized to the
  * default value.
  */
-int order;
+extern int order;
 
 /* The queue is used to print the tree in
  * level order, starting from the root
  * printing each entire rank on a separate
  * line, finishing with the leaves.
  */
-node * queue;
+extern node * queue;
 
 /* The user can toggle on and off the "verbose"
  * property, which causes the pointer addresses
  * to be printed out in hexadecimal notation
  * next to their corresponding keys.
  */
-bool verbose_output;
+extern bool verbose_output;
 
 
 // FUNCTION PROTOTYPES.
@@ -168,4 +169,109 @@ node * delete( node * root, int key );
 void destroy_tree_nodes(node * root);
 node * destroy_tree(node * root);
 
+// Disk_Based_B+_Tree. 2013012096_YuJaeSun
+// Free Page 관련:
+// Free page 는 2개의 offset 으로 관리함.
+// header page 에서 1개. header가 가르키는 page 에서 1개.
+// 새로운 노드 만들어질때 그
+// DEFINE SOME MACROS TO USE IT EXPLICT
+#define H_F_P_O 0
+#define H_R_P_O 8
+#define H_N_O_P 16
+#define BSZ 4096
+
+/**
+HEADER_PAGE
+0~7 : FREE_PAGE
+8~15 : ROOT_PAGE
+16~23 : #_OF_PAGES
+24~4095 : RESERVED.
+**/
+typedef header_page_f {
+	off_t free_page;
+	off_t root_page;
+	int64_t number_of_pages;
+} header_page;
+/**
+RECORD
+0~7 : key
+8~127 : vaule
+**/
+typedef record_f {
+	int64_t key;
+	char value[120];
+} record_f;
+/**
+INDEX
+0~7 : key
+8~15 : page offset that is pointing the file including bigger key values.
+**/
+typedef index_f {
+	int64_t key;
+	off_t page_offset;
+} index_f;
+// is_leaf =1 when it is leaf_node.
+/**
+LEAF NODE
+0~7 : parent_page_offset or free page offset (If it is free page)
+8~11 : checking whether leaf or not
+12~15 : number of keys. In Leaf node, it is smaller than 32.
+16~119 : HOLE
+120~127 : right sibling page offset
+128 ~ 4095 : holing records.
+**/
+typedef leaf_node_f {
+	off_t parent_page_offset;
+	int is_leaf;
+	int number_of_keys;
+	char HOLE[104];
+	off_t right_page_offset;
+	record_f records[31];
+}leaf_node_f;
+/**
+INTERNAL NODE
+0~7 : parent page offset or free page offset
+8~11 : checking whether leaf or not
+12~15 : number of keys. In internal node, it is smaller than 249.
+16~119 : HOLE
+120~127 : left most offset
+128~4095 : holding indexes
+**/
+typedef internal_node_f {
+	off_t parent_page_offset;
+	int is_leaf;
+	int number_of_keys;
+	char HOLE[104];
+	off_t left_most_offset;
+	index_f indexes[248];
+} internal_node_f;
+
+//TODO::OPEN_DB_FIN
+FILE* fp;
+void header_init();
+int open_db(char* pathname);
+//TODO::FIND_ON_GOING
+//CHAR* 리턴하는 방법에대해서. 동적할당 VS PARAM 으로 넘겨줭.
+extern char* VALUE[120];
+header_page* getHeader();
+leaf_node_f* getNewLeaf();
+internal_node_f* getNewInter();
+int find_i_in_leaf(int64_t key, record_f* record, int number_of_keys);
+int search_leaf(int64_t key, record_f* record, int number_of_keys);
+int find_i_in_indexes(int64_t key, index_f* index, int number_of_keys);
+int search_index(int64_t key, index_f* index);
+char* Find(int64_t key);
+//
+leaf_node_f* findLeaf(int64_t key);
+
+
+
+int Insert(int64_t key, char* value);
+
+
+
+
+
+
+int Delete(int64_t key);
 #endif /* __BPT_H__*/
