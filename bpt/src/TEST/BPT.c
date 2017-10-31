@@ -1,41 +1,49 @@
-//2013012096_YuJaeSun
-#include "BPT.h"
+#include "bpt.h"
 
 /**
 	If we make a new file, we have to initialize our header page.
 	This function will help you to do it.
 	Make new header page and Write it in file.
-	Set free page offset to the first page offset.
+	Set FREE page offset to the first page offset.
  **/
 void headerInit(){
-	HeaderPage* head = (HeaderPage*)malloc(sizeof(HeaderPage));
+	HeaderPage* head = (HeaderPage*)malloc(BLOCK_SIZE);
 	memset(head, 0, sizeof(head));
 	head -> free_page = (off_t)4096;
 	head -> root_page = (off_t)0;
 	head -> number_of_pages = 0;
 	writeInFile(head, 0);
-	free(head);
+	FREE(head);
 }
 
 /**
 	Before using other operation like insert, delete, find, we must call this function before.
-	If the file named pathname already exists, It will open it with read & write mode.
-	If not, It will make the new file named pathname and open it with write & read mode.
+	If the file named pathname already exists, It will open it with "r+" mode.
+	If not, It will make the new file named pathname and open it with "w+" mode.
  **/
 int open_db(char* pathname){
-	if((fp = fopen(pathname, "r+")) == NULL){
-		fp = fopen(pathname, "w+");
+	if ((fp = fopen(pathname, "r+")) == NULL) {
+		fp = fopen(pathname, "w+"); // If not exist, open with "w+"
 		headerInit();
 	}
-	if(fp == NULL) return -1;
+	if (fp == NULL) {
+		return -1;
+	}
 	return 0;
 }
 
+/**
+This function is used to close the file.
+**/
 void close_db(){
-	if(fp != NULL)
+	if (fp != NULL) {
 		fclose(fp);
+	}
 }
 
+/**
+	These two functions named writeInFile and readFromFile mean by their literal name.
+**/
 void writeInFile(void* data, off_t off_data){
 	fseek(fp, off_data, SEEK_SET);
 	fwrite(data, BLOCK_SIZE, 1, fp);
@@ -47,51 +55,98 @@ void readFromFile(void* data, off_t off_data){
 }
 
 /**
-	These three functions are needed when we try to get header page, new leaf node and new internal node.
+This function is used to copy R's data to L's data. 
+start_R is the start index in R. And start_L is the start index in L.
+size is the number of records we want to copy.
+**/
+void mappingInRecord(Record* L, int start_L, Record* R, int start_R, int size) {
+	for (int i = start_L, j = start_R; j < start_R + size; ++j) {
+		L[i].key = R[j].key;
+		strcpy(L[i].value, R[j].value);
+		i++;
+	}
+}
+/**
+This function is used to copy R's data to L's data.
+start_R is the start index in R. And start_L is the start index in L.
+size is the number of indexes we want to copy.
+**/
+void mappingInIndex(Index* L, int start_L, Index* R, int start_R, int size){
+	for (int i = start_L, j = start_R; j < start_R + size; ++j) {
+		L[i].key = R[j].key;
+		L[i].page_offset = R[j].page_offset;
+		i++;
+	}
+}
+
+/**
+	This function is used to get header page.
+	Read from file and return it.
  **/
+
 HeaderPage* getHeaderPage(){
-	HeaderPage* tmp = (HeaderPage*)malloc(sizeof(HeaderPage));
+	HeaderPage* tmp = (HeaderPage*)malloc(BLOCK_SIZE);
 	readFromFile(tmp, 0);
 	return tmp;
 }
 
+/**
+This function is used to get new leaf node.
+Make the new leaf node with initializing and return it.
+**/
+
 LeafNode* getNewLeafNode(){
-	LeafNode* tmp = (LeafNode*)malloc(sizeof(LeafNode));
+	LeafNode* tmp = (LeafNode*)malloc(BLOCK_SIZE);
 	memset(tmp, 0, BLOCK_SIZE);
 	tmp -> parent_page_offset = 0;
 	tmp -> is_leaf = 1;
 	tmp -> number_of_keys = 0;
+	for (int i = 0; i < 104; ++i) {
+		(tmp -> hole)[i] = 'a';
+	}
 	tmp -> right_page_offset = 0;
 	return tmp;
 }
 
+/**
+This function is used to get new internal node.
+Make the new internal node with initializing and return it.
+**/
+
 InternalNode* getNewInternalNode(){
-	InternalNode* tmp = (InternalNode*)malloc(sizeof(InternalNode));
+	InternalNode* tmp = (InternalNode*)malloc(BLOCK_SIZE);
 	memset(tmp, 0, BLOCK_SIZE);
 	tmp -> parent_page_offset = 0;
 	tmp -> is_leaf = 0;
 	tmp -> number_of_keys = 0;
+	for (int i = 0; i < 104; ++i) {
+		(tmp -> hole)[i] = 'a';
+	}
 	tmp -> left_most_offset = 0;
 	return tmp;
 }
 
 /**
 	This function is used to find the child offset from index to find the leaf node which is including the key.
-	Index consists of key and page offset like the right one. <key, page offset>
-	The page offset in Index is pointing the node, keys in the node are larger than the key paired with page offset.
-	
-	Return : Position of the key in Parent Node which is the smallest of those that are larger than key we want to find.
+
+	Return : Position of the key in Parent Node which is the smallest of those that are larger than the key.
  **/
 int findPositionInIndex(int64_t key, Index* index, int number_of_keys){
+	
 	int start = 0;
-	int end = number_of_keys-1;
+	int end = number_of_keys - 1;
 	int mid = (start + end) / 2;
-	while(start <= end){
-		if(index[mid].key == key) return mid + 1;
-		else if(index[mid].key < key) {
+	
+	while (start <= end) {
+		
+		if (index[mid].key == key) {
+			return mid + 1;
+		
+		} else if(index[mid].key < key) {
 			start = mid + 1;
 			mid = (start + end) / 2;
-		}else{
+		
+		} else {
 			end = mid - 1;
 			mid = (start + end) / 2;
 		}
@@ -105,38 +160,44 @@ int findPositionInIndex(int64_t key, Index* index, int number_of_keys){
 	3> If not, find position by using function 'findPositionInLeaf'.
 
 	Return : Same as 'findPositionInLeaf'.
-					 In case 1> or 2>, return left most or right most position.
+	In case 1> return left most.
+	In case 2> return number of keys in index.
  **/
 int searchIndex(int64_t key, Index* index, int number_of_keys){
-	int i = 0;
-	// Case 1>
-	if(key < index[0].key) {
+	
+	// key is smaller than the smallest key in index.
+	if (key < index[0].key) {
 		return -1;
-	// Case 2>
+	// key is larger than the largest key in index.
 	} else if (key >= index[number_of_keys-1].key) {
+		
 		return number_of_keys;
-	// Case 3>
+	// find the position of the smallest key of the larger ones.
 	} else {
-		i = findPositionInIndex(key, index, number_of_keys);
-		return i;
+		return findPositionInIndex(key, index, number_of_keys);
 	}
 }
 
 /**
 	This function is used to find the key from leaf node.
-	
+
 	Return : the position of key in leaf node.
-					 If we cannot find it, return -1.
+	If we cannot find it, return -1.
  **/
 int findPositionInLeaf(int64_t key, Record* record, int number_of_keys){
+	
 	int start = 0;
 	int end = number_of_keys - 1;
 	int mid = (start + end) / 2;
-	while(start <= end){
-		if(record[mid].key == key) return mid;
-		else if (record[mid].key < key) {
+	
+	while (start <= end) {
+		if (record[mid].key == key) {
+			return mid;
+		
+		} else if (record[mid].key < key) {
 			start = mid + 1;
 			mid = (start + end) / 2;
+		
 		} else {
 			end = mid - 1;
 			mid = (start + end) / 2;
@@ -146,32 +207,28 @@ int findPositionInLeaf(int64_t key, Record* record, int number_of_keys){
 }
 
 /**
-	Same as function 'findPositionInLeaf'.
- **/
-int searchLeaf(int64_t key, Record* record, int number_of_keys){
-	return findPositionInLeaf(key, record, number_of_keys);
-}
-/**
 	1> If it is an empty tree, return NULL. if not, keep going down.
 	2> Get root page offset from file and check out whether leaf or not.
-		 If it is a leaf node, search the key we want to find in the node.
+		If it is a leaf node, search the key we want to find in the node.
 	3> If the root page is not a leaf node, find the leaf node by loop.
-		 When we find the leaf node, search the key we want to find in the node.
-	
+	When we find the leaf node, search the key we want to find in the node.
+
 	Return : value in key or NULL
  **/
+
 char* find(int64_t key){
 	HeaderPage* head = getHeaderPage();
-	// Case 1>
-	if (head -> number_of_pages == 0){
+	// If it is empty, return NULL
+	if (head -> number_of_pages == 0) {
+		FREE(head);
 		return NULL;
 	}
-	
-	char* VALUE = (char*)malloc(sizeof(char)*120);
-	memset(VALUE, 0, sizeof(char) * 120);
+	// Define VAULE to return char*.
+	char* VALUE = (char*)malloc(sizeof (char) * 120);
+	memset(VALUE, 0, sizeof (char) * 120);
 
 	off_t off_root = head -> root_page; // get root page offset.
-	free(head);
+	FREE(head);
 
 	LeafNode* L = getNewLeafNode();
 	InternalNode* I = getNewInternalNode();
@@ -179,40 +236,50 @@ char* find(int64_t key){
 	readFromFile(I, off_root);
 	int index;
 	off_t off_tmp;
-	// Case 2>
-	if (I -> is_leaf == 1){ 
-		free(I);
+	
+	// If root node is an leaf node, find the key in node.
+	if (I -> is_leaf == 1) { 
+		FREE(I);
 		readFromFile(L, off_root);
-		index = searchLeaf(key, L -> records, L -> number_of_keys);
-		if (index == -1){ // Fail to find the key.
-			free(L);
+		index = findPositionInLeaf(key, L -> records, L -> number_of_keys);
+
+		if (index == -1) { // Fail to find the key.
+			FREE(L);
+			FREE(VALUE);
 			return NULL;
-		} else {          // Success to find the key.
+		}
+		else {             // Success to find the key.
 			strcpy(VALUE, (L -> records)[index].value); 
-			free(L);
+			FREE(L);
 			return VALUE;
 		}
-	// Case 3>
+	// If root node is not a leaf node, find leaf node first. 
 	} else { 
-		while (I -> is_leaf != 1){
+
+		while (I -> is_leaf != 1) {
+
 			index = searchIndex(key, I -> indexes, I -> number_of_keys);
-			if (index == -1){
+
+			if (index == -1) {
 				off_tmp = (I -> left_most_offset);
 			} else {
-				off_tmp = (I -> indexes)[index-1].page_offset;
+				off_tmp = (I -> indexes)[index - 1].page_offset;
 			}
 			readFromFile(I,off_tmp);
 		}
-		free(I);
+		FREE(I);
+		// off_tmp stores the offset of leaf node.
 		readFromFile(L,off_tmp);
-
-		index = searchLeaf(key, L -> records, L -> number_of_keys);
-		if (index == -1){ // Fail to find the key.
-			free(L); 
+		index = findPositionInLeaf(key, L -> records, L -> number_of_keys);
+		
+		if (index == -1) { // Fail to find the key.
+			FREE(L);
+			FREE(VALUE);
 			return NULL;
+
 		} else {          // Success to find the key.
 			strcpy(VALUE, (L -> records)[index].value);
-			free(L);
+			FREE(L);
 			return VALUE;
 		}
 		return NULL;
@@ -220,32 +287,31 @@ char* find(int64_t key){
 }
 
 /**
-	First, read header page from file to get the free page offset.
-	if the free page pointed by header page does not point other free page, we set the free page offset in header page to the block next to the last one.
-	if not, set the free page offset in header page to the offset pointed by the page pointed by header page.
-	Last, increase the number of pages in header page.
+	First, read header page from file to get the FREE page offset.
+	if the FREE page pointed by header page does not point other FREE page, we set the FREE page offset in header page to the block next to the last one.
+	if not, set the FREE page offset in header page to the offset pointed by the page pointed by header page.
 
 	Return : new page offset.
-	
  **/
 off_t getNewPage(){
 	HeaderPage* head = getHeaderPage();
+	
 	off_t new_page_offset = head -> free_page;
 	int64_t number_of_pages = head -> number_of_pages;
 
 	LeafNode* tmp = getNewLeafNode();
 	readFromFile(tmp, new_page_offset);
-	head -> number_of_pages = head -> number_of_pages + 1;
-	// There is an only free page in tree.
+	(head -> number_of_pages)++;
+	// There is an only FREE page in tree.
 	if (tmp -> parent_page_offset == 0) {
 		head -> free_page = BLOCK_SIZE + BLOCK_SIZE * (head -> number_of_pages);
-	// There are some free pages in tree.
+		// There are some FREE pages in tree.
 	} else {
 		head -> free_page = tmp -> parent_page_offset;
 	}
 	writeInFile(head, 0);
-	free(head);
-	free(tmp);
+	FREE(head);
+	FREE(tmp);
 	return new_page_offset;
 }
 
@@ -256,99 +322,112 @@ off_t getNewPage(){
 
 	Let v prime be the value such that exactly ceil(n/2) of the values are less than v prime. n is MAX KEY IN LEAF of INDEX + 1.
 	Find the v prime by branch and the moving position that is next to the v prime' s position.
-	parameter 'moving_position' helps you to move the keys and pointers left node to right one.
+	parameter 'v_prime_position' helps you to move the keys and pointers left node to right one.
 
 	Return : v prime
  **/
 
-int64_t findVPrimeInLeaf(LeafNode* L, int64_t key, int* moving_position){
-	int v_prime_pos = ceil((MAX_KEY_IN_LEAF + 1) / 2);
+int64_t findVPrimeInLeaf(LeafNode* L, int64_t key, int* v_prime_position){
+	int v_prime_pos = (int)ceil((L -> number_of_keys + 1) / 2);
 
-	if (key < (L -> records)[v_prime_pos].key){
-		if (key < (L -> records)[v_prime_pos].key){
-			*moving_position = v_prime_pos - 1;
-			return (L -> records)[v_prime_pos - 1].key;
-		} else {
-			*moving_position = v_prime_pos;
+	if (key > (L -> records)[v_prime_pos].key) {
+		*v_prime_position = v_prime_pos;
+		return (L -> records)[v_prime_pos].key;
+	}
+
+	else {
+		
+		if (key < (L -> records)[v_prime_pos - 1].key) {
+			*v_prime_position = v_prime_pos - 1;
+			return (L->records)[v_prime_pos - 1].key;
+		}
+		
+		else {
+			*v_prime_position = v_prime_pos;
 			return key;
 		}
-	} else {
-		*moving_position = v_prime_pos;
-		return (L -> records)[v_prime_pos].key;
 	}
 }
 
 /**
 	Same as function 'findVPrimeInLeaf'.
-**/
-int64_t findVPrimeInIndex(InternalNode* I, int64_t key, int* moving_position){
-	int v_prime_pos = ceil((MAX_KEY_IN_INDEX + 1) / 2);
+ **/
+int64_t findVPrimeInIndex(InternalNode* I, int64_t key, int* v_prime_position){
+	int v_prime_pos = (int)ceil((I -> number_of_keys + 1) / 2);
 
-	if ( key < (I -> indexes)[v_prime_pos].key){
-		if (key < (I -> indexes)[v_prime_pos - 1].key){
-			*moving_position = v_prime_pos;
+	if (key > (I -> indexes)[v_prime_pos].key) {
+		*v_prime_position = v_prime_pos;
+		return (I -> indexes)[v_prime_pos].key;
+	}
+	
+	else {
+		if (key < (I -> indexes)[v_prime_pos - 1].key) {
+			*v_prime_position = v_prime_pos - 1;
 			return (I -> indexes)[v_prime_pos - 1].key;
-		} else {
-			*moving_position = v_prime_pos;
+		}
+		else {
+			*v_prime_position = v_prime_pos;
 			return key;
 		}
-	} else {
-		*moving_position = v_prime_pos + 1;
-		return (I -> indexes)[v_prime_pos].key;
 	}
 }
 
 /**
 	1> If it is an empty tree, return NULL. if not keep going down.
 	2> Get root page offset from file and check out whether leaf or not.
-	   If it is a leaf node, return the leaf node.
+	If it is a leaf node, return the leaf node.
 	3> If the root node is not a leaf, find the leaf node by loop.
-		 When we find the leaf node, return the leaf node.
+	When we find the leaf node, return the leaf node.
 
 	Return : Leaf Node Pointer that can include the key.
  **/
 LeafNode* findLeaf(int64_t key, off_t* off_leaf){
 	HeaderPage* head = getHeaderPage();
-	// Case 1>
+	// If it is empty, return NULL
 	if (head -> number_of_pages == 0){
-		free(head);
+		FREE(head);
 		return NULL;
 	}
-	
+
 	off_t off_root = head -> root_page;
-	free(head);
+	FREE(head);
 
 	LeafNode* L = getNewLeafNode();
 	InternalNode* I = getNewInternalNode();
 	readFromFile(I, off_root);
 
-	int is_leaf;
 	off_t off_tmp;
 	int index;
-	// Case 2>
-	if (I -> is_leaf == 1){ 
-		free(I);
+	// If it is a leaf node, return it.
+	if (I -> is_leaf == 1) { 
+		FREE(I);
+
 		readFromFile(L, off_root);
 		*off_leaf = off_root;
+
 		return L;
-	// Case 3>
+	// If not, find the leaf node.
 	} else {
-		while (I -> is_leaf != 1){
+		while (I -> is_leaf != 1) {
+
 			index = searchIndex(key ,I -> indexes, I -> number_of_keys);
-			if (index == -1){
+
+			if (index == -1) {
 				off_tmp = (I -> left_most_offset);
+
 			} else {
-				off_tmp = (I -> indexes)[index-1].page_offset;
+				off_tmp = (I -> indexes)[index - 1].page_offset;
 			}
 			readFromFile(I, off_tmp);
+
 		}
-		free(I);
+		FREE(I);
 		readFromFile(L, off_tmp);
 		*off_leaf = off_tmp;
 		return L;
 	}
-	return NULL;
 }
+
 /**
 	Unfortunately, leaf node struct and internal node struct are different.
 	So, the function is implemented by two different types.
@@ -364,37 +443,38 @@ LeafNode* findLeaf(int64_t key, off_t* off_leaf){
  **/
 int insertInLeaf(LeafNode* L, int64_t key, char* value){
 	int number_of_keys = L -> number_of_keys;
-	// Case 1>
-	if (L -> number_of_keys == 0){
+	// If it is empty, put the data in first position.
+	if (L -> number_of_keys == 0) {
 		(L -> records)[0].key = key;
 		strcpy((L -> records)[0].value, value);
 		(L -> number_of_keys)++;
 		return 0;
 	}
-	
+
 	int start = 0;
 	int end = number_of_keys - 1;
 	int mid = (start + end) / 2;
+	
 	Record tmp_records[31];
-	memset(tmp_records,0,sizeof(tmp_records));
-	// Case 2>
-	if (key < (L -> records)[0].key){
-		memcpy(tmp_records, L -> records, sizeof(Record) * number_of_keys);
+	memset(tmp_records, 0, sizeof (tmp_records));
+	// Find the position of the key.
+	if (key < (L -> records)[0].key) {
+		mappingInRecord(tmp_records, 0, L -> records, 0, L -> number_of_keys);
 		(L -> records)[0].key = key;
 		strcpy((L -> records)[0].value, value);
-		memcpy((L -> records) + 1, tmp_records, sizeof(Record) * number_of_keys);
+		mappingInRecord(L -> records, 1, tmp_records, 0, L -> number_of_keys);
 		(L -> number_of_keys)++;
 		return 0;
-	// Case 3>
-	} else if (key > (L -> records)[end].key){
+	
+	} else if (key > (L -> records)[end].key) {
 		(L -> records)[number_of_keys].key = key;
 		strcpy((L -> records)[number_of_keys].value, value);
 		(L -> number_of_keys)++;
 		return 0;
-	// Case 4>
+	
 	} else {
-		while(start <= end){
-			if ((L -> records)[mid].key > key){
+		while (start <= end) {
+			if ((L -> records)[mid].key > key) {
 				end = mid - 1;
 				mid = (start + end) / 2;
 			} else {
@@ -403,51 +483,58 @@ int insertInLeaf(LeafNode* L, int64_t key, char* value){
 			}
 		}
 	}
-	
+
 	int number_of_copy = number_of_keys - start;
-	memcpy(tmp_records, (L -> records) + start, sizeof(Record) * number_of_copy);
+	
+	mappingInRecord(tmp_records, 0, L -> records, start, number_of_copy);
 	(L -> records)[start].key = key;
 	strcpy((L -> records)[start].value, value);
-	memcpy((L->records) + start + 1, tmp_records, sizeof(Record) * number_of_copy);
+	mappingInRecord(L -> records, start + 1, tmp_records, 0, number_of_copy);
 	(L -> number_of_keys)++;
+	
 	return 0;
 }
+
 /**
 	Same as function 'insertInLeaf'.
-**/
+ **/
+
 int insertInIndex(InternalNode* I, int64_t key, off_t page_offset){
 	int number_of_keys = I -> number_of_keys;
 	// Case 1>
-	if (number_of_keys == 0){
+	if (number_of_keys == 0) {
+
 		(I -> indexes)[0].key = key;
 		(I -> indexes)[0].page_offset = page_offset;
 		(I -> number_of_keys)++;
+
 		return 0;
 	}
 
 	int start = 0;
 	int end = number_of_keys - 1;
 	int mid = (start + end) / 2;
+
 	Index tmp_indexes[248];
-	memset(tmp_indexes, 0, sizeof(tmp_indexes));
+	memset(tmp_indexes, 0, sizeof (tmp_indexes));
 	// Case 2>
-	if (key < (I -> indexes)[0].key){
-		memcpy(tmp_indexes, I -> indexes, sizeof(Index) * number_of_keys);
+	if (key < (I -> indexes)[0].key) {	
+		mappingInIndex(tmp_indexes, 0, I -> indexes, 0, I -> number_of_keys);
 		(I -> indexes)[0].key = key;
 		(I -> indexes)[0].page_offset = page_offset;
-		memcpy((I -> indexes) + 1, tmp_indexes, sizeof(Index) * number_of_keys);
+		mappingInIndex(I -> indexes, 1, tmp_indexes, 0, I -> number_of_keys);
 		(I -> number_of_keys)++;
 		return 0;
-	// Case 3>
-	} else if (key > (I -> indexes)[end].key){
+		// Case 3>
+	} else if (key > (I -> indexes)[end].key) {
 		(I -> indexes)[number_of_keys].key = key;
 		(I -> indexes)[number_of_keys].page_offset = page_offset;
 		(I -> number_of_keys)++;
 		return 0;
-	// Case 4>
+		// Case 4>
 	} else {
-		while (start <= end){
-			if ((I -> indexes)[mid].key > key){
+		while (start <= end) {
+			if ((I -> indexes)[mid].key > key) {
 				end = mid - 1;
 				mid = (start + end) / 2;
 			} else {
@@ -458,52 +545,53 @@ int insertInIndex(InternalNode* I, int64_t key, off_t page_offset){
 	}
 
 	int number_of_copy = number_of_keys - start;
-	memcpy(tmp_indexes, (I -> indexes) + start, sizeof(Index) * number_of_copy);
+	
+	mappingInIndex(tmp_indexes, 0, I -> indexes, start, number_of_copy);
 	(I -> indexes)[start].key = key;
 	(I -> indexes)[start].page_offset = page_offset;
-	memcpy((I -> indexes) + start + 1, tmp_indexes, sizeof(Index) * number_of_copy);
+	mappingInIndex(I -> indexes, start + 1, tmp_indexes, 0, number_of_copy);
 	(I -> number_of_keys)++;
 	return 0;
 }
+
 /**
 	This function is used to split the leaf node because of insertion overflow.
-	
+
 	1> Make the new leaf node and set the right page offset and parent page offset.
 	2> Set the right page offset and parent page offset in leaf node named 'L'.
 	3> Find the v prime and moving position by using function 'findVPrimeInLeaf', then move the keys and values in 'L' to new node.
 	4> Write the data of right leaf node in file.
 
-	Return : v prime.
+Return : v prime.
  **/
 int64_t splitInLeaf(LeafNode* L, int64_t key, char* value, off_t off_parent){
-	// Case 1>
-	off_t new_page = getNewPage(); 
+	
+	off_t new_page = getNewPage();
+	// Define new right leaf node, then set some data.
 	LeafNode* right_leaf_node = getNewLeafNode();
 	right_leaf_node -> right_page_offset = L -> right_page_offset;
 	right_leaf_node -> parent_page_offset = L -> parent_page_offset;
-	
-	// Case 2>
+
 	L -> right_page_offset = new_page;
 	L -> parent_page_offset = off_parent;
-	
-	// Case 3>
-	int moving_position = 0;
-	int64_t v_prime = findVPrimeInLeaf(L, key, &moving_position);
-	memcpy(right_leaf_node -> records, (L -> records) + moving_position, sizeof(Record) * (MAX_KEY_IN_LEAF - moving_position));
-	memset((L -> records) + moving_position, 0, sizeof(Record) * (MAX_KEY_IN_LEAF - moving_position));
-	right_leaf_node -> number_of_keys = MAX_KEY_IN_LEAF - moving_position;
-	L -> number_of_keys = moving_position;
-	
+
+	// Find the position of the v prime key.
+	int v_prime_position = 0;
+	int64_t v_prime = findVPrimeInLeaf(L, key, &v_prime_position);
+
+	mappingInRecord(right_leaf_node -> records, 0, L -> records, v_prime_position, MAX_KEY_IN_LEAF - v_prime_position);
+
+	right_leaf_node -> number_of_keys = MAX_KEY_IN_LEAF - v_prime_position;
+	L -> number_of_keys = v_prime_position;
+	// Put the key in left or right node.
 	if (key < v_prime) {
 		insertInLeaf(L, key, value);
 	} else {
 		insertInLeaf(right_leaf_node, key, value);
 	}
 
-	// Case 4>
 	writeInFile(right_leaf_node, new_page);
-	free(right_leaf_node);
-
+	FREE(right_leaf_node);
 	return v_prime;
 }
 
@@ -516,25 +604,27 @@ int64_t splitInLeaf(LeafNode* L, int64_t key, char* value, off_t off_parent){
 
 	Return : v prime.
  **/
-int64_t splitInIndex(InternalNode* I, int64_t v_prime, int moving_position, int64_t key, off_t page_offset, off_t parent_offset, off_t* off_r_I){
-	// Case 1>
+int64_t splitInIndex(InternalNode* I, int64_t v_prime, int v_prime_position, int64_t key, off_t page_offset, off_t parent_offset, off_t* off_r_I){
 	off_t off_new = getNewPage();
+	// Define the new right internal node, then set some data.
 	InternalNode* right_internal_node = getNewInternalNode();
+
 	right_internal_node -> parent_page_offset = parent_offset;
 	*off_r_I = off_new;
-
-	if (key == v_prime){
+	// if key is same as v prime key, 
+	if (key == v_prime) {
 		right_internal_node -> left_most_offset = page_offset;
+		mappingInIndex(right_internal_node -> indexes, 0, I -> indexes, v_prime_position, MAX_KEY_IN_INDEX - v_prime_position);
+		I -> number_of_keys = v_prime_position;
+		right_internal_node -> number_of_keys = MAX_KEY_IN_INDEX - v_prime_position;
+	
 	} else {
-		right_internal_node -> left_most_offset = (I -> indexes)[moving_position - 1].page_offset;
+		right_internal_node -> left_most_offset = (I -> indexes)[v_prime_position].page_offset;
+		mappingInIndex(right_internal_node -> indexes, 0, I -> indexes, v_prime_position + 1, MAX_KEY_IN_INDEX - v_prime_position - 1);
+		I -> number_of_keys = v_prime_position;
+		right_internal_node -> number_of_keys = MAX_KEY_IN_INDEX - v_prime_position - 1;
 	}
-	
-	// Case 2>
-	memcpy(right_internal_node -> indexes, (I -> indexes) + moving_position, sizeof(Index) * (MAX_KEY_IN_INDEX - moving_position));
-	memset((I -> indexes) + moving_position, 0, sizeof(Index) * (MAX_KEY_IN_INDEX - moving_position));	
-	I -> number_of_keys = moving_position;
-	right_internal_node -> number_of_keys = MAX_KEY_IN_INDEX - moving_position;
-	
+
 	if (key < v_prime) {
 		insertInIndex(I, key, page_offset);
 	} else if (key > v_prime) {
@@ -542,14 +632,14 @@ int64_t splitInIndex(InternalNode* I, int64_t v_prime, int moving_position, int6
 	}
 	writeInFile(right_internal_node, off_new);
 
-	// Case 3>
+	// Change the parent page offset of children of new right node.
 	InternalNode* child = getNewInternalNode();
-	// 1. Change the child pointed by left-most offset.
+	// First, change the child pointed by left-most offset.
 	off_t off_child = right_internal_node -> left_most_offset;
 	readFromFile(child, off_child);
 	child -> parent_page_offset = off_new;
 	writeInFile(child, off_child);
-	// 2. Change other child nodes.
+	// Then, change other children nodes.
 	for (int i = 0; i < right_internal_node -> number_of_keys; ++i) {
 		off_child = (right_internal_node -> indexes)[i].page_offset;
 		readFromFile(child, off_child);
@@ -557,53 +647,66 @@ int64_t splitInIndex(InternalNode* I, int64_t v_prime, int moving_position, int6
 		writeInFile(child, off_child);
 	}
 
-	free(right_internal_node);
+	FREE(right_internal_node);
+	FREE(child);	
 	return v_prime;
 }
 
-//Leaf insert 에서 split 상황에 현재의 L 이 부모가 있을때 이제 그 부모를 나눌때의 함수를 재귀로 구현.
+/**
+	This function is used to do insert in internal node and is recursive one.
+	
+	Case 1> No need to split.
+	Case 2> Split, then put the v prime in parent node.
+	Case 3> If do Case 2>, do Case 1> and Case 2> in parent node by using recursive function.
+	
+**/
 int insertEntryIndex(InternalNode* I,off_t off_I, int64_t key, off_t page_offset){
 	off_t off_parent = I -> parent_page_offset;
 	off_t off_right_internal_node = 0;
-	if(I -> number_of_keys < MAX_KEY_IN_INDEX) { // 나눌필요가 없을떄 넣고 쓰고 끝냄.
+	// No need to split.
+	if (I -> number_of_keys < MAX_KEY_IN_INDEX) {
 		insertInIndex(I ,key ,page_offset);
 		writeInFile(I, off_I);
+		FREE(I);
 		return 0;
-	} else { //mSPLIT 상황 //TODO:: 10/26 에러.
-		if (I -> parent_page_offset == 0){
+	// Split.
+	} else {
+		// If it is aroot node, first define the new page offset.
+		if (I -> parent_page_offset == 0) {
 			off_parent = getNewPage();
 		}
-
-		int moving_position = 0;
-		int64_t v_prime = findVPrimeInIndex(I,key,&moving_position);
-		splitInIndex(I, v_prime, moving_position, key, page_offset, off_parent, &off_right_internal_node);
-
-		if (I->parent_page_offset == 0){ // 루트 일때는 부모노드 만들어서 V` 값 올리고 끝 !.
+		// moving data I to new right node.
+		int v_prime_position = 0;
+		int64_t v_prime = findVPrimeInIndex(I,key,&v_prime_position);
+		splitInIndex(I, v_prime, v_prime_position, key, page_offset, off_parent, &off_right_internal_node);
+		
+		if (I->parent_page_offset == 0) {
 			I -> parent_page_offset = off_parent;
+				
 			InternalNode* root_node = getNewInternalNode();
+			
 			HeaderPage* head = getHeaderPage();
 			head -> root_page = off_parent;
 			writeInFile(head, 0);
-			
+			// Make I and right node the child of root node.
 			root_node -> left_most_offset = off_I;
 			insertInIndex(root_node, v_prime, off_right_internal_node);
-			
+
 			writeInFile(root_node, off_parent);
 			writeInFile(I, off_I);
-			
-			free(head);
-			free(root_node);
-			free(I);
-			return 0;
 
-		}else { // 루트아닐때는 V` 부모에 삽입 재귀적으로 구현.
+			FREE(head);
+			FREE(root_node);
+			FREE(I);
+			return 0;
+		// If it is not a root node, do insert v prime key in parent by using recursive.
+		} else {
 			InternalNode* parent = getNewInternalNode();
 			readFromFile(parent, off_parent);
 			writeInFile(I, off_I);
+			FREE(I);
 			insertEntryIndex(parent, off_parent, v_prime, off_right_internal_node);
-			
-			free(parent);
-			free(I);
+
 			return 0;
 		}
 	}
@@ -612,494 +715,588 @@ int insertEntryIndex(InternalNode* I,off_t off_I, int64_t key, off_t page_offset
 
 /**
 	This function is used to insert key and value.
+	
 	1> If it is an empty tree, make the new leaf node and set it root. And put the key and value on it.
 	2> If the key already exists, exit the function.
 	3> No need to split after insert the key and value.
 	4> Case that 'L' is the root node. Make the new root node.
-		 Set the root node's left-most page offset and put the v prime and right node page offset.
+	Set the root node's left-most page offset and put the v prime and right node page offset.
 	5> Case that 'L' is not the root node. So we have to put the v prime and right node page offset to parent of 'L'.
-		 Then we do it again by using recursive function named 'InsertEntryIndex' until we reach to root node.
+			Then we do it again by using recursive function named 'InsertEntryIndex' until we reach to root node.
 
 	Return : 0 if success, -1 if fail to insert.
  **/
 int insert(int64_t key, char* value){
-	
+
 	off_t off_L = 0;
 	LeafNode* L = findLeaf(key, &off_L);
-
 	InternalNode* parent = getNewInternalNode();
-	
-	//Case 1>
-	if(L == NULL) {
+
+	// If it is emtpy, make new leaf node and insert data in it.
+	if (L == NULL) {
 		off_t off_new = getNewPage();
 		HeaderPage* head = getHeaderPage();
 		head -> root_page = off_new;
-		free(L);
 		L = getNewLeafNode();
 		insertInLeaf(L,key,value);
-		
+
 		writeInFile(L, off_new);
 		writeInFile(head, 0);
-		free(L);
-		free(parent);
-		free(head);
+		
+		FREE(L);
+		FREE(parent);
+		FREE(head);
 		return 0;
 	}
 
-	// Case 2>
+	// If the key already exists, return -1.
 	if (findPositionInLeaf(key, L -> records, L -> number_of_keys) != -1) {
+		FREE(L);
+		FREE(parent);
 		return -1;
 	}
-	
+
 	off_t off_parent = L -> parent_page_offset;
 	off_t off_right = 0;
 	int64_t v_prime = 0;
-	
-	// Case 3>
-	if (L -> number_of_keys < MAX_KEY_IN_LEAF){
+
+	// No need to split.
+	if (L -> number_of_keys < MAX_KEY_IN_LEAF) {
 		insertInLeaf(L, key, value);
 		writeInFile(L, off_L);
-		free(L);
-		free(parent);
+		FREE(L);
+		FREE(parent);
+	// Split.
 	} else {
-		// Case 4>
-		if(L -> parent_page_offset == 0) { 
+		// If L is root node, make new root node.
+		if (L -> parent_page_offset == 0) { 
 			off_parent = getNewPage();
 			L -> parent_page_offset = off_parent;
-
+			//find the v prime key to insert in parent.
 			v_prime = splitInLeaf(L, key, value, off_parent);
 			off_right = L -> right_page_offset;
-			
+
 			parent -> left_most_offset =  off_L;
 			insertInIndex(parent, v_prime, off_right);
-			
+
 			HeaderPage* head = getHeaderPage();	
 			head -> root_page = off_parent;
+
 			writeInFile(head, 0);
 			writeInFile(parent, off_parent);
 			writeInFile(L, off_L);
-			free(parent);
-			free(L);
-			free(head);
-		// Case 5>
+
+			FREE(parent);
+			FREE(L);
+			FREE(head);
+		// If L is not a root node, insert the v prime key in parent. 
+		// In this case, we use the function 'insertEntryIndex'.
 		} else { 
 			v_prime = splitInLeaf(L, key, value, off_parent);
 			off_right = L -> right_page_offset;
-			
+
 			writeInFile(L, off_L);
 			readFromFile(parent, L -> parent_page_offset);
-			
+
 			insertEntryIndex(parent, L -> parent_page_offset, v_prime, off_right);
-			
-			free(L);
-			//free(head);
+			FREE(L);
 		}
 	}
 	return 0;
 }
 
-// DELETION 시작 지점.
-// TODO::: 10/27.
+
 /**
-	페이지 삭제.
-	페이지 개수가 0이라면 그냥 초기화 시키듯 해버려줌.
-	그거 아니라면 해드가 가르키던걸 tmp 에 넣고 해드가 tmp를 가르키게함.
-	전체 페이지 개수 1개 줄임. 
-	그리고 지워지는 녀석하고 해드 파일에다가 씀!!.
-	head 전역으로 선언해서 하는게 더 편하겠네ㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔㅔ
+	This function is used to delete page. Then Do write in file.
  **/
 void deletePage(off_t off_delete){
+
 	HeaderPage* head = getHeaderPage();
 	LeafNode* tmp = getNewLeafNode();
-	tmp->parent_page_offset = head -> free_page;
+	
+	tmp -> parent_page_offset = head -> free_page;
 	head -> free_page = off_delete;
-	head -> number_of_pages = head->number_of_pages-1;
-	if (head -> number_of_pages == 0){
-		head -> root_page = 0;
-		head -> free_page = 4096;
-	}
-	fseek(fp,0,SEEK_SET);
-	fwrite(head, sizeof(HeaderPage), 1, fp);
-	fseek(fp, off_delete, SEEK_SET);
-	fwrite(tmp, BLOCK_SIZE, 1, fp);
-	free(head);
-	free(tmp);
-}
-
-int find_i_index_V(InternalNode* parent, off_t off_L){
-	Index tmp[248];
-	int number_of_keys = parent -> number_of_keys;
-	memset(tmp, 0, sizeof(tmp));
-	memcpy(tmp, parent -> indexes, sizeof(Index) * number_of_keys);
-	// 아 이거는 페이지 뒤죽박죽이라 순회밖에 안되네 
-	for (int i = 0; i < number_of_keys; ++i){
-		if(off_L == tmp[i].page_offset) return i;
-	}
-	return -1; // 나를 가르키던게 상위 페이지의 left_most 일때.
-}
-
-int findValue(LeafNode* L,off_t off_L, off_t off_parent, off_t* off_right, off_t* off_left, int64_t* key_R, int64_t* key_L){
-	InternalNode* parent = getNewInternalNode();
-	fseek(fp, off_parent, SEEK_SET);
-	fread(parent, BLOCK_SIZE, 1, fp);
-	int i = find_i_index_V(parent, off_L);
-	if (i==-1){
-		*off_right = (parent->indexes)[0].page_offset;
-		*key_R = (parent->indexes)[0].key;
-	} else if(i==0){
-		*off_left = parent -> left_most_offset;
-		*key_L = (parent->indexes)[0].key;
-		*off_right = (parent->indexes)[1].page_offset;
-		*key_R = (parent->indexes)[1].key;
-	} else if (i == L->number_of_keys - 1){
-		*off_left = (parent->indexes)[i-1].page_offset;
-		*key_L = (parent->indexes)[i].key;
+	(head -> number_of_pages)--;
+	// If it is empty tree, initialize header page.
+	if (head -> number_of_pages == 0) {
+		headerInit();
 	} else {
-		*off_left = (parent -> indexes)[i-1].page_offset;
-		*key_L = (parent->indexes)[i].key;
-		*off_right = (parent->indexes)[i+1].page_offset;
-		*key_R = (parent->indexes)[i].key;
+		writeInFile(head, 0);
 	}
-	free(parent);
-	return i;
-}
+	writeInFile(tmp, off_delete);
 
-int findValue_index(InternalNode* I, off_t off_I, off_t off_parent, off_t* off_right, off_t* off_left, int64_t* key_R, int64_t* key_L){
-	InternalNode* parent = getNewInternalNode();
-	fseek(fp, off_parent, SEEK_SET);
-	fread(parent,BLOCK_SIZE,1,fp);
-	int i = find_i_index_V(parent, off_I);
-	if (i == -1){
-		*off_right = (parent->indexes)[0].page_offset;
-		*key_R = (parent->indexes)[0].key;
-	} else if(i==0){
-		*off_left = parent -> left_most_offset;
-		*key_L = (parent->indexes)[0].key;
-		*off_right = (parent->indexes)[1].page_offset;
-		*key_R = (parent->indexes)[1].key;
-	} else if (i == I->number_of_keys - 1){
-		*off_left = (parent->indexes)[i-1].page_offset;
-		*key_L = (parent->indexes)[i].key;
-	} else {
-		*off_left = (parent -> indexes)[i-1].page_offset;
-		*key_L = (parent->indexes)[i].key;
-		*off_right = (parent->indexes)[i+1].page_offset;
-		*key_R = (parent->indexes)[i].key;
-	}
-	free(parent);
-	return i;
+	FREE(head);
+	FREE(tmp);
 }
 
 /**
-	리프노드에서 그냥 지워주기만 할때 병합이나 재분배 필요없이 
-	지우면서 종료시켜준다. 기록은 밖에서함.
-	못찾을 경우 -1 리턴. 잘지우면 0 리턴.
+	This function is used to find the child's offset position in parent.
+	I used loop, because the page number in file is not sequencial.
  **/
-int delete_in_leaf(LeafNode* L, int64_t key, off_t L_offset){
-	int i = searchLeaf(key, L->records, L->number_of_keys);
-	if(i==-1) return -1;
-	int number_of_copy = L->number_of_keys - i - 1;
-	Record tmp_records[31];
-	memset(tmp_records,0,sizeof(tmp_records));
 
-	memcpy(tmp_records, (L->records)+i+1, sizeof(Record) * number_of_copy);
-	memset((L->records)+i,0,sizeof(Record) * (number_of_copy+1));
-	memcpy((L->records)+i, tmp_records, sizeof(Record) * number_of_copy);
-	L->number_of_keys = L->number_of_keys-1;
+int findPositionInParent(InternalNode* parent, off_t off_L){
+	if (off_L == parent -> left_most_offset) {
+		return -1;
+	}
+	for (int i = 0; i < parent -> number_of_keys; ++i) {
+		if (off_L == (parent -> indexes)[i].page_offset) {
+			return i;
+		}
+	}
+}
+/**
+	This function is used to find the v prime position and offsets of siblings.
+ **/
+int getVPrimeIndex(off_t off_L, off_t off_parent, off_t* off_right, off_t* off_left){
+	InternalNode* parent = getNewInternalNode();
+	readFromFile(parent, off_parent);
+
+	int pos = findPositionInParent(parent, off_L);
+	
+	if (pos == -1) { 
+		*off_right = (parent -> indexes)[0].page_offset;
+		*off_left = -1;
+	
+	} else if (pos == 0) {
+		*off_left = parent -> left_most_offset;
+		*off_right = (parent -> indexes)[1].page_offset;
+	
+	} else if (pos == (parent -> number_of_keys) - 1){
+		*off_left = (parent -> indexes)[pos - 1].page_offset;
+		*off_right = -1;
+	
+	} else {
+		*off_left = (parent -> indexes)[pos - 1].page_offset;
+		*off_right = (parent->indexes)[pos + 1].page_offset;
+	}
+	FREE(parent);
+	return pos;
+}
+
+/**
+	This function is used to delete the key and value in leaf node.
+ **/
+int deleteInLeaf(LeafNode* L, int64_t key, off_t off_L){
+	int pos = findPositionInLeaf(key, L -> records, L -> number_of_keys);
+	// If cannot find, return -1.
+	if (pos == -1) {
+		return -1;
+	}
+	// If the key is on right most position, Do decrease number of keys.
+	if (pos == L -> number_of_keys - 1) {
+		(L -> number_of_keys)--;
+		return 0;
+	}
+	
+	int number_of_copy = (L -> number_of_keys) - pos - 1;
+	Record tmp_records[MAX_KEY_IN_LEAF];
+	memset(tmp_records, 0, sizeof (Record) * MAX_KEY_IN_LEAF);
+	
+	mappingInRecord(tmp_records, 0, L -> records, pos + 1, number_of_copy);
+	mappingInRecord(L -> records, pos, tmp_records, 0, number_of_copy);
+	(L -> number_of_keys)--;
 	return 0;
 }
 
 /**
-	인덱스에서 일단 지우고 봄.
+	This function is used to delete the key and offset in internal node.
  **/
-void delete_in_index(InternalNode* I, int i){
-	Index tmp_index[248];
-	memset(tmp_index,0,sizeof(tmp_index));
-	int number_of_keys = I->number_of_keys;
-	memcpy(tmp_index, (I->indexes)+i+1, sizeof(Index) * (number_of_keys - i-1));
-	memcpy((I->indexes)+i, tmp_index, sizeof(Index) * (number_of_keys-i-1));
-	memset((I->indexes)+number_of_keys-2,0,sizeof(Index));
-	(I->number_of_keys)--;
-}
-// parent 만 쓰고 나머지는 본래 함수에서 write.
-void borrow_in_left(LeafNode* L, LeafNode* left_node, off_t off_parent, int v_prime_index){
-	InternalNode* parent = getNewInternalNode();
-	fseek(fp,off_parent,SEEK_SET);
-	fread(parent,BLOCK_SIZE,1,fp);
-
-	int number_of_keys = left_node -> number_of_keys;
-	//left_node 에서 마지막 Key, VAlue 지우고 L 로 옴기기 !
-	Record tmp_record[31];
-	memset(tmp_record, 0, sizeof(tmp_record));
-	tmp_record[0].key = (left_node->records)[number_of_keys-1].key;
-	strcpy(tmp_record[0].value, (left_node->records)[number_of_keys-1].value);
-	memset((left_node->records)+number_of_keys-1,0,sizeof(Record) * (31-number_of_keys+1)); // left 는 끝났어
-	number_of_keys = L->number_of_keys;
-	memcpy(tmp_record + 1, L->records, sizeof(Record) * number_of_keys);
-	memcpy(L->records, tmp_record, sizeof(Record) *(number_of_keys+1));
-	// L 도 세팅 완료상태야.
-	(parent->indexes)[v_prime_index].key = tmp_record[0].key;
-	(left_node->number_of_keys)--;
-	(L->number_of_keys)++;
-	fseek(fp,off_parent,SEEK_SET);
-	fwrite(parent,BLOCK_SIZE,1,fp);
-	free(parent);
-}
-
-void borrow_in_right(LeafNode* L, LeafNode* right_node, off_t off_parent, int v_prime_index){
-	InternalNode* parent = getNewInternalNode();
-	fseek(fp,off_parent,SEEK_SET);
-	fread(parent,BLOCK_SIZE,1,fp);
-	int number_of_keys = right_node->number_of_keys;
-	Record tmp_record[31];
-	memset(tmp_record, 0, sizeof(tmp_record));
-	memcpy(tmp_record, right_node->records, sizeof(Record) * number_of_keys);
-	memset(right_node->records,0, sizeof(Record) * number_of_keys);
-	memcpy(right_node->records, tmp_record + 1, sizeof(Record) * (number_of_keys-1));
-	number_of_keys = L -> number_of_keys;
-	(L->records)[number_of_keys].key =  tmp_record[0].key;
-	strcpy((L->records)[number_of_keys].value, tmp_record[0].value);
-	(parent->indexes)[v_prime_index].key = tmp_record[1].key;
-	(right_node->number_of_keys)--;
-	(L->number_of_keys)++;
-	fseek(fp,off_parent,SEEK_SET);
-	fwrite(parent,BLOCK_SIZE,1,fp);
-	free(parent);
-}
-
-void borrow_in_left_index(InternalNode* I, InternalNode* left_node, off_t off_parent, int v_prime_index){
-	InternalNode* parent = getNewInternalNode();
-	fseek(fp,off_parent,SEEK_SET);
-	fread(parent,BLOCK_SIZE,1,fp);
-	int number_of_keys = left_node -> number_of_keys;
-	int64_t tmp_key=(left_node->indexes)[number_of_keys-1].key;
-	// Left Node 에서 마지막 값
+void deleteInIndex(InternalNode* I, int pos){
+	// If the pos is on right most position, Do decrease number of keys.
+	if (pos == I -> number_of_keys - 1){
+		(I -> number_of_keys)--;
+		return;
+	}
+	
+	int number_of_copy = (I -> number_of_keys) - pos - 1;
 	Index tmp_index[MAX_KEY_IN_INDEX];
-	memset(tmp_index, 0, sizeof(tmp_index));
-	tmp_index[0].key = (parent->indexes)[v_prime_index].key;
-	tmp_index[0].page_offset = I->left_most_offset;
-	I->left_most_offset = (left_node->indexes)[number_of_keys-1].page_offset;
-	memset((left_node->indexes)+number_of_keys-1, 0, sizeof(Index));
-	number_of_keys = I -> number_of_keys;
-	memcpy(tmp_index+1, I->indexes, sizeof(Index) * number_of_keys);
+	memset(tmp_index, 0, sizeof (Index) * MAX_KEY_IN_INDEX);
 
-	(I->number_of_keys)++;
-	memcpy(I->indexes, tmp_index, sizeof(Index) * number_of_keys+1);
-	(left_node->number_of_keys)--;
-	// 여기까지 왼쪽노드, 자기노드 완료. 부모 V_prime_index 에 있는 값 바꿔서 저장.
-
-	(parent->indexes)[v_prime_index].key = tmp_key;
-	fseek(fp,off_parent,SEEK_SET);
-	fwrite(parent,BLOCK_SIZE,1,fp);
-	free(parent);
+	mappingInIndex(tmp_index, 0, I -> indexes, pos + 1, number_of_copy);
+	mappingInIndex(I -> indexes, pos, tmp_index, 0, number_of_copy);
+	(I -> number_of_keys)--;
 }
 
-void borrow_in_right_index(InternalNode* I, InternalNode* right_node, off_t off_parent, int v_prime_index){
+/**
+	This function is used to borrow the record from left sibling.
+**/
+void borrowInLeftLeafNode(LeafNode* L, LeafNode* left_node, off_t off_parent, int v_prime_index){
 	InternalNode* parent = getNewInternalNode();
-	fseek(fp,off_parent,SEEK_SET);
-	fread(parent,BLOCK_SIZE,1,fp);
-	int number_of_keys = right_node->number_of_keys;
-	int64_t tmp_key = (right_node->indexes)[0].key;
-	off_t tmp_offset = (right_node->left_most_offset);
-	Record tmp_index[MAX_KEY_IN_INDEX];
-	memset(tmp_index, 0, sizeof(tmp_index));
-	right_node->left_most_offset = (right_node->indexes)[0].page_offset;
-	memcpy(tmp_index, (right_node->indexes)+1, sizeof(Index) * (number_of_keys-1));
-	memset(right_node->indexes,0, sizeof(Record) * number_of_keys);
-	memcpy(right_node->indexes, tmp_index, sizeof(Index) * (number_of_keys-1));
-	number_of_keys = I -> number_of_keys;
-	(I->indexes)[number_of_keys].key =  (parent->indexes)[v_prime_index].key;
-	(I->indexes)[number_of_keys].page_offset = tmp_offset;
-	(parent->indexes)[v_prime_index].key = tmp_key;
-	(right_node->number_of_keys)--;
-	(I->number_of_keys)++;
-	fseek(fp,off_parent,SEEK_SET);
-	fwrite(parent,BLOCK_SIZE,1,fp);
-	free(parent);
+	readFromFile(parent, off_parent);
+
+	int number_of_keys = left_node -> number_of_keys;
+	Record tmp_record[MAX_KEY_IN_LEAF];
+	memset(tmp_record, 0, sizeof(Record) * MAX_KEY_IN_LEAF);
+	// tmp_record[0] is the right most key and value in left sibling.
+	tmp_record[0].key = (left_node -> records)[number_of_keys - 1].key;
+	strcpy(tmp_record[0].value, (left_node -> records)[number_of_keys - 1].value);
+
+	(left_node -> number_of_keys)--;
+
+	number_of_keys = L -> number_of_keys;
+	mappingInRecord(tmp_record, 1, L -> records, 0, number_of_keys);
+	mappingInRecord(L -> records, 0, tmp_record, 0, number_of_keys + 1);
+	(L -> number_of_keys)++;
+	// Change the parent's v prime key to the left most key in node L.
+	(parent -> indexes)[v_prime_index].key = tmp_record[0].key;
+	writeInFile(parent, off_parent);
+	FREE(parent);
 }
 
+/**
+	This function is used to borrow the record from right sibling.
+	**/
+void borrowInRightLeafNode(LeafNode* L, LeafNode* right_node, off_t off_parent, int v_prime_index){
+	InternalNode* parent = getNewInternalNode();
+	readFromFile(parent, off_parent);
+
+	int number_of_keys = right_node -> number_of_keys;
+	Record tmp_record[MAX_KEY_IN_LEAF];
+	memset(tmp_record, 0, sizeof (Record) * MAX_KEY_IN_LEAF);
+	// Copy right node's records to tmp_record. 
+	mappingInRecord(tmp_record, 0, right_node -> records, 0, number_of_keys);
+	// Copy tmp_record to right node except for left most record to borrow.
+	mappingInRecord(right_node -> records, 0, tmp_record, 1, number_of_keys - 1);
+	(right_node -> number_of_keys)--;
+
+	number_of_keys = L -> number_of_keys;
+	// Put the left most record in right sibling to right most record in node L.
+	(L -> records)[number_of_keys].key =  tmp_record[0].key;
+	strcpy((L -> records)[number_of_keys].value, tmp_record[0].value);
+	(L -> number_of_keys)++;
+	// Change the parent's v prime key to the left most key in right node.
+	(parent -> indexes)[v_prime_index].key = tmp_record[1].key;
+	writeInFile(parent, off_parent);
+	FREE(parent);
+}
+/**
+This function is used to borrow index from left sibling.
+In Internalnode, the process of borrowing is quite different from that in leaf node.
+**/
+
+void borrowInLeftInternalNode(InternalNode* I, InternalNode* left_node, off_t off_parent, int v_prime_index){
+	InternalNode* parent = getNewInternalNode();
+	readFromFile(parent, off_parent);
+	// tmp_key is for parent's v prime key.
+	int64_t tmp_key = (left_node -> indexes)[(left_node -> number_of_keys) - 1].key;
+	// tmp_page_offset is for I's left most offset.
+	off_t tmp_page_offset = (left_node -> indexes)[(left_node -> number_of_keys) - 1].page_offset;
+	
+	Index tmp_index[MAX_KEY_IN_INDEX];
+	memset(tmp_index, 0, sizeof (Index) * MAX_KEY_IN_INDEX);
+	// set the first Index in tmp_index.
+	tmp_index[0].key = (parent -> indexes)[v_prime_index].key;
+	tmp_index[0].page_offset = I -> left_most_offset;
+	// set the left most offset
+	I -> left_most_offset = tmp_page_offset;
+	(left_node -> number_of_keys)--;
+
+	mappingInIndex(tmp_index, 1, I -> indexes, 0, I -> number_of_keys);
+	mappingInIndex(I -> indexes, 0, tmp_index, 0, (I -> number_of_keys) + 1);
+	(I -> number_of_keys)++;
+	// Change the parent's v prime key to tmp_key.
+	(parent -> indexes)[v_prime_index].key = tmp_key;
+	writeInFile(parent, off_parent);
+	FREE(parent);
+}
+/**
+ This function is used to borrow index from right sibling.
+ **/
+void borrowInRightInternalNode(InternalNode* I, InternalNode* right_node, off_t off_parent, int v_prime_index){
+	InternalNode* parent = getNewInternalNode();
+	readFromFile(parent, off_parent);
+	
+	int number_of_keys = right_node -> number_of_keys;
+	// 0번째 offset -> 가장 left_most 로 !.
+	// tmp_key is for parent's v prime key.
+	int64_t tmp_key = (right_node -> indexes)[0].key;
+	// tmp_page_offset is for the left most offset in right node.
+	off_t tmp_page_offset = (right_node -> indexes)[0].page_offset;
+	// parent_tmp_key and tmp_offset are for the right most index in node I.
+	int64_t parent_tmp_key = (parent -> indexes)[v_prime_index].key;
+	off_t tmp_offset = right_node -> left_most_offset;
+
+	Index tmp_index[MAX_KEY_IN_INDEX];
+	memset(tmp_index, 0, sizeof (Index) * MAX_KEY_IN_INDEX);
+	// set the left most offset in right node
+	right_node -> left_most_offset = tmp_page_offset;
+	
+	mappingInIndex(tmp_index, 0, right_node -> indexes, 1, number_of_keys - 1);
+	mappingInIndex(right_node -> indexes, 0, tmp_index, 0, number_of_keys - 1);
+	(right_node -> number_of_keys)--;
+	// set the right most index in node I.
+	number_of_keys = I -> number_of_keys;
+	(I -> indexes)[number_of_keys].key =  parent_tmp_key;
+	(I -> indexes)[number_of_keys].page_offset = tmp_offset;
+	(I -> number_of_keys)++;
+	// Change the parent's v prime key to tmp_key.
+	(parent -> indexes)[v_prime_index].key = tmp_key;
+	writeInFile(parent, off_parent);
+	FREE(parent);
+}
 
 /**
 	이함수는 합병되어서 부모함수 지울떄!!
 	부모에서 지워야할 인덱스가 있는 곳을 가르키고 있어 index 는 .
  **/
-void delete_entry_index(InternalNode* I, int index, off_t off_I){
-	delete_in_index(I, index); // I 내부노드에서 지웠어 !!
-	off_t off_parent = I->parent_page_offset;
-	off_t off_right=0;
-	off_t off_left=0;
-	int64_t key_R=0;
-	int64_t key_L=0;
-	int i = findValue_index(I,off_I,off_parent,&off_right,&off_left,&key_R,&key_L);
-	InternalNode* left_node=getNewInternalNode(); // TODO
-	InternalNode* right_node=getNewInternalNode(); // TODO
-	InternalNode* parent=getNewInternalNode(); // TODO
-	if(off_left != 0){
-		//left_node = getNewInternalNode();
-		fseek(fp, off_left, SEEK_SET);
-		fwrite(left_node,BLOCK_SIZE,1,fp);
-	}
-	if(off_right != 0){
-		//right_node = getNewInternalNode();
-		fseek(fp, off_right, SEEK_SET);
-		fwrite(right_node,BLOCK_SIZE,1,fp);
-	}
-	if(I->parent_page_offset == 0 && I->number_of_keys == 0){ // 이경우는 그 left_most 만 있고 암것도 없을떄인데 루트
+void deleteEntryIndex(int index, off_t off_I){
+	
+	InternalNode* I = getNewInternalNode();
+	readFromFile(I, off_I);
+
+	deleteInIndex(I, index); 
+
+	off_t off_parent = I -> parent_page_offset;
+	off_t tmp_page_offset = 0;
+	// 
+	if (off_parent == 0 && I -> number_of_keys != 0) {
+		writeInFile(I, off_I);
+		FREE(I);
+		return;
+	
+	} else if (off_parent == 0 && I -> number_of_keys == 0) {
+		
 		HeaderPage* head = getHeaderPage();
-		head -> root_page = I->left_most_offset;
-		LeafNode* new_root = getNewLeafNode();
-		fseek(fp,I->left_most_offset,SEEK_SET);
-		fread(new_root, BLOCK_SIZE, 1, fp);
-		new_root -> parent_page_offset = 0;
+		tmp_page_offset = I -> left_most_offset;
 
-		fseek(fp,I->left_most_offset,SEEK_SET);
-		fwrite(new_root,BLOCK_SIZE,1,fp);
-		fseek(fp,0,SEEK_SET);
-		deletePage(off_I);
-		fwrite(head,sizeof(HeaderPage),1,fp);
-		free(head);
-		free(new_root);
-		//deletePage(off_I);
-	} else if (I->number_of_keys < ceil(MAX_KEY_IN_INDEX/2)-1){ // SPLIT !!
-		if(off_left != 0 && left_node->number_of_keys > ceil(MAX_KEY_IN_INDEX/2)-1) { //왼쪽에서 빌려오는 경우 NOT IN LEAF
-			borrow_in_left_index(I, left_node, off_parent, i);
-			fseek(fp,off_left,SEEK_SET);
-			fwrite(left_node,BLOCK_SIZE,1,fp);
-			fseek(fp,off_I,SEEK_SET);
-			fwrite(I,BLOCK_SIZE,1,fp);
-		} else if (off_right != 0 && right_node->number_of_keys > ceil(MAX_KEY_IN_INDEX/2)-1){
-			borrow_in_right_index(I, right_node, off_parent, i+1);
-			fseek(fp,off_right,SEEK_SET);
-			fwrite(right_node,BLOCK_SIZE,1,fp);
-			fseek(fp,off_I,SEEK_SET);
-			fwrite(I,BLOCK_SIZE,1,fp);
-		} else { //  합병하고 재귀함수로 이 함수 호출. 합병은 언제나 왼쪽이랑 하는걸 가정하고 함. 귀찮음.
-		// 합병은 딱 왼쪽이나 오른쪽이 정확히 절반일때만 합병이 가능한건데..? 후??
-			//parent = getNewInternalNode();
-			if(off_left != 0 && left_node -> number_of_keys == ceil(MAX_KEY_IN_INDEX/2)-1){ // 왼쪽일때
-				(left_node->indexes)[left_node->number_of_keys].key = (parent->indexes)[index].key;
-				(left_node->indexes)[left_node->number_of_keys].page_offset = I -> left_most_offset;
-				memcpy((left_node->indexes)+left_node->number_of_keys+1, I->indexes, sizeof(Index) * (I->number_of_keys));
-				left_node -> number_of_keys = left_node->number_of_keys + I->number_of_keys + 1;
+		if (head -> number_of_pages > 2) {
+			InternalNode* new_root = getNewInternalNode();
+			readFromFile(new_root, tmp_page_offset);
+			new_root -> parent_page_offset = 0;
 
-				fseek(fp, off_parent, SEEK_SET);
-				fread(parent, BLOCK_SIZE, 1, fp);
-				delete_entry_index(parent, i, off_parent);
-				deletePage(off_I);
-			} else { // 오른쪽일때
-				(I->indexes)[I->number_of_keys].key = (parent->indexes)[index+1].key;
-				(I->indexes)[I->number_of_keys].page_offset = right_node -> left_most_offset;
-				memcpy((I->indexes)+I->number_of_keys+1, right_node->indexes, sizeof(Index)*(right_node->number_of_keys));
-				I -> number_of_keys = I->number_of_keys + right_node->number_of_keys+1;
+			FREE(head);
+			deletePage(off_I);
 
-				fseek(fp, off_parent, SEEK_SET);
-				fread(parent, BLOCK_SIZE, 1, fp);
-				delete_entry_index(parent, i+1, off_parent);
-				deletePage(off_right);
-			}
+			head = getHeaderPage();
+			head -> root_page = tmp_page_offset;
+			writeInFile(new_root, tmp_page_offset);
+			writeInFile(head, 0);
+			FREE(head);
+			FREE(new_root);
+			FREE(I);
+			return;
+		} else {
+			LeafNode* new_root = getNewLeafNode();
+			readFromFile(new_root, tmp_page_offset);
+			new_root -> parent_page_offset = 0;
+			new_root -> right_page_offset = 0;
+			
+			FREE(head);
+			deletePage(off_I);
+
+			head = getHeaderPage();
+			head -> root_page = tmp_page_offset;
+			writeInFile(new_root, tmp_page_offset);
+			writeInFile(head, 0);
+			FREE(head);
+			FREE(new_root);
+			FREE(I);
+			return;
 		}
-	} else { // NOT to do
 	}
-	free(left_node);
-	free(right_node);
-	free(parent);
-	//if(I != NULL) free(I);
+	off_t off_right = 0;
+	off_t off_left = 0;
+	// 내 입장에서 부모에서 나를 가르키고 있는 offset 의 index 를 리턴해줌.
+	// 따라서 left 쓸떄 vs right 쓸떄 1차이가 있음.
+	int pos = getVPrimeIndex(off_I, off_parent, &off_right, &off_left);
+
+	// Definition left and right node to merge or redistribute.
+	//TODO
+	InternalNode* left_node = getNewInternalNode();
+	InternalNode* right_node = getNewInternalNode();
+
+	if (off_left != -1) {
+		readFromFile(left_node, off_left);
+	}
+	if (off_right != -1) {
+		readFromFile(right_node, off_right);
+	}
+	// 여기 있던거 위쪽으로 올림. root node 인 경우.
+	//
+	// 문제 없이 삭제할수 있을때.
+	if (I -> number_of_keys >= MIN_KEY_IN_INDEX) {
+		writeInFile(I, off_I);
+
+		// Merge or Redistribution.
+	} else if (I -> number_of_keys < MIN_KEY_IN_INDEX) {
+
+		// Borrow In Left
+		if (off_left != -1 && left_node -> number_of_keys > MIN_KEY_IN_INDEX) {
+			borrowInLeftInternalNode(I, left_node, off_parent, pos);
+			writeInFile(left_node, off_left);
+			writeInFile(I, off_I);
+
+			// Borrow In right.
+		} else if (off_right != -1 && right_node -> number_of_keys > MIN_KEY_IN_INDEX){
+			borrowInRightInternalNode(I, right_node, off_parent, pos + 1);
+			writeInFile(right_node, off_right);
+			writeInFile(I, off_I);
+
+		} else { // Merge : 그 왼쪽으로 병합하는 거니깐 그 오른쪽에있던 자식들의 부모 offset 변경해야해 !.
+			InternalNode* parent = getNewInternalNode();
+			readFromFile(parent, off_parent);
+			// 왼쪽이랑 합병하는 경우 .
+			int64_t tmp_key = 0;
+			off_t tmp_page_offset = 0;
+			int number_of_keys = 0;
+			if (off_left != -1) {
+				tmp_key = (parent -> indexes)[pos].key;
+				tmp_page_offset = I -> left_most_offset;
+				number_of_keys = (left_node -> number_of_keys) + (I -> number_of_keys) + 1;
+
+				(left_node -> indexes)[left_node -> number_of_keys].key = tmp_key;
+				(left_node -> indexes)[left_node -> number_of_keys].page_offset = tmp_page_offset;
+				mappingInIndex(left_node -> indexes, (left_node -> number_of_keys) + 1, I -> indexes, 0, I -> number_of_keys);
+
+				LeafNode* child = getNewLeafNode();
+				for (int i = left_node -> number_of_keys; i < number_of_keys; ++i) {
+					readFromFile(child, (left_node -> indexes)[i].page_offset);
+					child -> parent_page_offset = off_left;
+					writeInFile(child, (left_node -> indexes)[i].page_offset);
+				}
+				FREE(child);
+
+				left_node -> number_of_keys = number_of_keys;
+
+				writeInFile(left_node, off_left);
+				deletePage(off_I);
+				deleteEntryIndex(pos, off_parent);
+
+			} else if (off_right != -1) { // 오른쪽일때
+				tmp_key = (parent -> indexes)[pos + 1].key;
+				tmp_page_offset = right_node -> left_most_offset;
+				number_of_keys = (I -> number_of_keys) + (right_node -> number_of_keys) + 1;
+				(I -> indexes)[I -> number_of_keys].key = tmp_key;
+				(I -> indexes)[I -> number_of_keys].page_offset = tmp_page_offset;
+
+				mappingInIndex(I -> indexes, (I -> number_of_keys) + 1, right_node -> indexes, 0, right_node -> number_of_keys);
+				
+				LeafNode* child = getNewLeafNode();
+				for (int i = I -> number_of_keys; i < number_of_keys; ++i) {
+					readFromFile(child, (I -> indexes)[i].page_offset);
+					child -> parent_page_offset = off_I;
+					writeInFile(child, (I -> indexes)[i].page_offset);
+				}
+				FREE(child);
+				
+				I -> number_of_keys = number_of_keys;
+
+				writeInFile(I, off_I);
+				deletePage(off_right);
+				deleteEntryIndex(pos + 1, off_parent);
+			}
+			FREE(parent);
+		}
+	}
+	FREE(I);
+	FREE(left_node);
+	FREE(right_node);
 }
 
-// DELETE 
-int delete(int64_t key){
-	off_t L_offset = 0;
-	LeafNode* L = findLeaf(key, &L_offset);
-	InternalNode* I = getNewInternalNode();
-	//if (delete_in_leaf(L,key,L_offset) == -1) return -1;
-	if(L == NULL) { // 빈노드일때
-		free(L);
+/**
+	Deletion is a bit more complicated than insertion.
+
+	Case 1> Delete the key. If there is no need to merge or redistribution, return.
+	Case 2> In case of redistribution, borrow record from sibling. Then return.
+	Case 3> In case of merge, Do merge with sibling, then delete key and offset in parent.
+
+**/
+int delete (int64_t key){
+	off_t off_L = 0;
+	LeafNode* L = findLeaf(key, &off_L);
+	// If it is empty, return NULL.
+	if (L == NULL) {
 		return -1;
 	}
-	if (findPositionInLeaf(key, L->records, L->number_of_keys) == -1) { // 키값이 없을때.
-		free(L);
+	// If cannot find, return -1.
+	if (findPositionInLeaf(key, L -> records, L -> number_of_keys) == -1) {
+		FREE(L);
 		return -1;
 	}
+
 	off_t off_parent = L -> parent_page_offset;
-	if (off_parent == 0) { // 지금 가져온 리프가 루트일때. 루트는 그냥 다 지워도 상관없어.
-		if(delete_in_leaf(L,key,L_offset) == -1) return -1;
-		if(L->number_of_keys == 0) { // 다 지워져서 없어져서 빈 페이지가 되는 경우
-			deletePage(L_offset);
+	// If L is a root node.
+	if (off_parent == 0) {
+		// Delete the key in Leaf L. 
+		deleteInLeaf(L, key, off_L);
+		
+		if (L -> number_of_keys == 0) {
+			deletePage(off_L);
 		} else {
-			fseek(fp, L_offset, SEEK_SET);
-			fwrite(L,BLOCK_SIZE,1,fp);
+			writeInFile(L, off_L);
 		}
-		free(L);
+		FREE(L);
 		return 0;
 	}
-	off_t off_right=0;
-	off_t off_left=0;
-	int64_t key_R = 0; // 이거 부모 양쪾포인터 사이에있는거.
-	int64_t key_L = 0;
-	int i = findValue(L,L_offset, L->parent_page_offset, &off_right, &off_left, &key_R, &key_L);
-	LeafNode* left_node=getNewLeafNode();
-	LeafNode* right_node=getNewLeafNode();
-	if (off_left != 0){
-		//left_node = getNewLeafNode();
-		fseek(fp, off_left, SEEK_SET);
-		fread(left_node, BLOCK_SIZE, 1, fp);
-	}
-	if(off_right != 0){
-		//right_node = getNewLeafNode();
-		fseek(fp, off_right, SEEK_SET);
-		fread(right_node, BLOCK_SIZE, 1, fp);
-	}
-	// 왼쪽 녀석 오른쪽 녀석( 오른쪽은 없을수도 있어서 이래함.
-	if (delete_in_leaf(L, key, L_offset) == -1) return -1; // DELETE !!
 	
-	if ((L->number_of_keys) >= ceil((MAX_KEY_IN_LEAF-1)/2)){ //No need to merge or redistribute. JUST DELETE !!.
-		fseek(fp,L_offset,SEEK_SET);
-		fwrite(L,BLOCK_SIZE,1,fp);
-	} else { // 병합하거나 재분배해야하는 경우 까다로움. 그 재분배부터.
-		if(off_left != 0 && left_node -> number_of_keys > ceil((MAX_KEY_IN_LEAF-1)/2)){ // 15개 보다 커야 빌려올수 있음
-			borrow_in_left(L, left_node, off_parent,i);
-			fseek(fp,off_left,SEEK_SET);
-			fwrite(left_node, BLOCK_SIZE,1, fp);
-			fseek(fp,L_offset,SEEK_SET);
-			fwrite(L,BLOCK_SIZE,1,fp);
-		} else if (off_right != 0 && right_node -> number_of_keys > ceil((MAX_KEY_IN_LEAF-1)/2)) { // right node 
-			borrow_in_right(L, right_node, off_parent,i+1);
-			fseek(fp,off_right,SEEK_SET);
-			fwrite(right_node,BLOCK_SIZE,1,fp);
-			fseek(fp,L_offset,SEEK_SET);
-			fwrite(L,BLOCK_SIZE,1,fp);
-		} else { // MERGE : 포인터 변수만 서로 바꿔준다의 의미가..?
-			//I = getNewInternalNode();
-			if(off_left != 0 && left_node -> number_of_keys == ceil((MAX_KEY_IN_LEAF-1)/2)+1){
-				int number_of_keys = L->number_of_keys;
-				memcpy((left_node->records)+(left_node->number_of_keys), L->records, sizeof(Record) * number_of_keys);
-				left_node->right_page_offset = L -> right_page_offset;
-				left_node->number_of_keys = left_node->number_of_keys + L->number_of_keys;
-				
-				fseek(fp,off_parent,SEEK_SET);
-				fread(I,BLOCK_SIZE,1,fp);
-				fseek(fp,off_left,SEEK_SET);
-				fwrite(left_node,BLOCK_SIZE,1,fp);
-				delete_entry_index(I, i, off_parent);
-				deletePage(L_offset);
-			} else {
-				int number_of_keys = right_node->number_of_keys;
-				memcpy((L->records)+(L->number_of_keys), right_node->records, sizeof(Record) * number_of_keys);
-				L->right_page_offset = right_node -> right_page_offset;
-				right_node->number_of_keys = right_node->number_of_keys + L->number_of_keys;
-				
-				fseek(fp, off_parent,SEEK_SET);
-				fread(I,BLOCK_SIZE,1,fp);
-				fseek(fp,L_offset,SEEK_SET);
-				fwrite(L,BLOCK_SIZE,1,fp);
-				delete_entry_index(I, i+1, off_parent);
+	LeafNode* left_node = getNewLeafNode();
+	LeafNode* right_node = getNewLeafNode();
+	off_t off_right = 0;
+	off_t off_left = 0;
+	// Find the position of v prime key and offsets of siblings.
+	int pos = getVPrimeIndex(off_L, L -> parent_page_offset, &off_right, &off_left);
+	
+	if (off_left != -1) {
+		readFromFile(left_node, off_left);
+	}
+	if (off_right != -1) {
+		readFromFile(right_node, off_right);
+	}
+	// Delete the key in Leaf L.
+	deleteInLeaf(L, key, off_L);
+
+	int number_of_keys = 0;
+	off_t tmp_page_offset = 0;
+	
+	// No need to merge or redistribute.
+	if ((L -> number_of_keys) >= MIN_KEY_IN_LEAF) {
+		writeInFile(L, off_L);
+	
+	} else {
+		// In case of redistribution.
+		if (off_left != -1 && left_node -> number_of_keys > MIN_KEY_IN_LEAF) { 
+			borrowInLeftLeafNode(L, left_node, off_parent, pos);
+			writeInFile(left_node, off_left);
+			writeInFile(L, off_L);
+
+		} else if (off_right != -1 && right_node -> number_of_keys > MIN_KEY_IN_LEAF) {
+			borrowInRightLeafNode(L, right_node, off_parent, pos + 1);
+			writeInFile(L, off_L);
+			writeInFile(right_node, off_right);
+
+		} else {
+		// In case of merge. Copy right to left.
+			if (off_left != -1) {
+
+				mappingInRecord(left_node -> records, left_node -> number_of_keys, L -> records, 0, L -> number_of_keys);
+				tmp_page_offset = L -> right_page_offset;
+				number_of_keys = (left_node -> number_of_keys) + (L -> number_of_keys);
+				left_node -> right_page_offset = tmp_page_offset;
+				left_node -> number_of_keys = number_of_keys;
+
+				writeInFile(left_node, off_left);
+				deletePage(off_L);
+
+				deleteEntryIndex(pos, off_parent);
+
+			} else if (off_right != -1) {
+
+				mappingInRecord(L -> records, L -> number_of_keys, right_node -> records, 0, right_node -> number_of_keys);
+				tmp_page_offset = right_node -> right_page_offset;
+				number_of_keys = (L -> number_of_keys) + (right_node -> number_of_keys);
+
+				L -> right_page_offset = tmp_page_offset;
+				L -> number_of_keys = number_of_keys;
+
+				writeInFile(L, off_L);
 				deletePage(off_right);
+
+				deleteEntryIndex(pos + 1, off_parent);
 			}
 		}
 	}
-	free(L);
-	free(left_node);
-	free(right_node);
-	free(I);
+	FREE(L);
+	FREE(left_node);
+	FREE(right_node);
 	return 0;
 }
