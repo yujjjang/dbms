@@ -1,3 +1,6 @@
+/**
+	Need to Implementation
+	**/
 #ifndef __BPT_H__
 #define __BPT_H__
 
@@ -84,15 +87,16 @@ typedef struct InternalNode {
 
 //open_db
 FILE* fp;
+HeaderPage* head;
 void headerInit();
-int open_db(char* pathname);
+int open_db(const char* pathname);
 void close_db();
 void writeInFile(void* data, off_t off_data);
 void readFromFile(void* data, off_t off_data);
 void mappingInRecord(Record* R, int start_R, Record* L, int start_L, int size);
 void mappingInIndex(Index* In, int start_In, Index* I, int start_I, int size);
 //find
-HeaderPage* getHeaderPage();
+void getHeaderPage();
 LeafNode* getNewLeafNode();
 InternalNode* getNewInternalNode();
 int findPositionInLeaf(int64_t key, Record* record, int number_of_keys);
@@ -120,13 +124,12 @@ int findPositionInParent(InternalNode* parent, off_t off_L);
 int getVPrimeIndex(off_t off_L,off_t off_parent, off_t* off_right, off_t* off_left);
 int deleteInLeaf(LeafNode* L, int64_t key, off_t L_offset);
 void deleteInIndex(InternalNode* I, int i);
-// v_prime_index 가 가르키고 있는 값은 결국 사이값이다. 양 포인터의. 왼쪽은 그냥 , 오른쪽은 +1 해서 넘길것.
 void borrowInLeftLeafNode(LeafNode* L, LeafNode* left_node, off_t off_parent, int v_prime_index);
 void borrowInRightLeafNode(LeafNode* L, LeafNode* right_node, off_t off_parent, int v_prime_index);
-void borrowInLeftInternalNode(InternalNode* I, InternalNode* left_node, off_t off_parent, int v_prime_index);
-void borrowInRightInternalNode(InternalNode* I, InternalNode* right_node, off_t off_parent, int v_prime_index);
+void borrowInLeftInternalNode(InternalNode* I, InternalNode* left_node, off_t off_parent, int v_prime_index, off_t off_I);
+void borrowInRightInternalNode(InternalNode* I, InternalNode* right_node, off_t off_parent, int v_prime_index, off_t off_I);
 void deleteEntryIndex(int index, off_t off_I);
-int delete(int64_t key);
+int Delete(int64_t key);
 
 
 
