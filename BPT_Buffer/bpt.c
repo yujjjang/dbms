@@ -1,4 +1,4 @@
-#include "bptv2.h"
+#include "bpt.h"
 
 /**
 	If we make a new file, we have to initialize our header page.
