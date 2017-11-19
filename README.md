@@ -69,7 +69,12 @@ I used two test cases. The first is arbitrary number and the second is the conti
 
 # Test Results
 
-
+![RANDOM](./pic/random.png)
+![20%Seq](./pic/2sequential.png)
+![40%Seq](./pic/4sequential.png)
+![60%Seq](./pic/6sequential.png)
+![80%Seq](./pic/8sequential.png)
+![Sequen](./pic/sequential.png)
 
 
 Analysis
