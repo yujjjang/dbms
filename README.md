@@ -69,12 +69,7 @@ I used two test cases. The first is arbitrary number and the second is the conti
 
 # Test Results
 
-![random](/uploads/3b5582cb2de0646f60171e96932ac01a/random.png)
-![2sequential](/uploads/dd68175d0da371b6d51ff76197a94b2d/2sequential.png)
-![4sequential](/uploads/f95da6f8db19c2648a7a3b4dbb45f04d/4sequential.png)
-![6sequential](/uploads/f8f57e1fa4763b1b3704bd4a7d9ff978/6sequential.png)
-![8sequential](/uploads/cb3ba88e363b6b72fff8aae8b4ba88f5/8sequential.png)
-![sequential](/uploads/01c41c0116d7cfc9dbacfefe43c36456/sequential.png)
+
 
 
 Analysis
