@@ -92,7 +92,7 @@ typedef struct TableManager {
 const char tableschema[16] = "tableschema.txt";
 FILE* fp[11];
 TableManager* TM;
-HeaderPage* head;
+HeaderPage* head[11];
 void headerInit();
 int open_table(char* pathname);
 void close_db();

@@ -8,13 +8,12 @@
  **/
 
 void headerInit(){
-	head = (HeaderPage*)malloc(BLOCK_SIZE);
-	memset(head, 0, sizeof (head));
-	head -> free_page = (off_t)4096;
-	head -> root_page = (off_t)0;
-	head -> number_of_pages = 0;
-
-	writeInFile(head, 0);
+	int id = g_table_id;
+	head[id] = (HeaderPage*)malloc(BLOCK_SIZE);
+	memset(head[id], 0, sizeof (head));
+	head[id] -> free_page = (off_t)4096;
+	head[id] -> root_page = (off_t)0;
+	head[id] -> number_of_pages = 0;
 }
 
 /**
@@ -105,8 +104,8 @@ void mappingInIndex(Index* L, int start_L, Index* R, int start_R, int size){
  **/
 
 void getHeaderPage(){
-	head = (HeaderPage*)malloc(BLOCK_SIZE);
-	readFromFile(head, 0);
+	head[g_table_id] = (HeaderPage*)malloc(BLOCK_SIZE);
+	readFromFile(head[g_table_id], 0);
 }
 
 /**
@@ -241,14 +240,14 @@ char* find(int table_id, int64_t key){
 	// If it is empty, return NULL
 	g_table_id = table_id;
 
-	if (head -> number_of_pages == 0) {
+	if (head[g_table_id] -> number_of_pages == 0) {
 		return NULL;
 	}
 	// Define VAULE to return char*.
 	char* VALUE = (char*)malloc(sizeof (char) * 120);
 	memset(VALUE, 0, sizeof (char) * 120);
 
-	off_t off_root = head -> root_page;
+	off_t off_root = head[g_table_id] -> root_page;
 
 	int loc = readFromBuffer(off_root);
 	Node* I = &BufferPool[loc];
@@ -309,18 +308,18 @@ Return : new page offset.
  **/
 off_t getNewPage(){
 
-	off_t new_page_offset = head -> free_page;
-	int64_t number_of_pages = head -> number_of_pages;
+	off_t new_page_offset = head[g_table_id] -> free_page;
+	int64_t number_of_pages = head[g_table_id] -> number_of_pages;
 
 	Node* tmp = getNewLeafNode();
 	readFromFile(tmp, new_page_offset);
-	(head -> number_of_pages)++;
+	(head[g_table_id] -> number_of_pages)++;
 	// There is an unique FREE page in tree.
 	if (tmp -> parent_page_offset == 0 || new_page_offset == BLOCK_SIZE + BLOCK_SIZE * number_of_pages) {
-		head -> free_page = BLOCK_SIZE + BLOCK_SIZE * (head -> number_of_pages);
+		head[g_table_id] -> free_page = BLOCK_SIZE + BLOCK_SIZE * (head[g_table_id] -> number_of_pages);
 		// There are some FREE pages in tree.
 	} else {
-		head -> free_page = tmp -> parent_page_offset;
+		head[g_table_id] -> free_page = tmp -> parent_page_offset;
 	}
 	FREE(tmp);
 	return new_page_offset;
@@ -392,11 +391,11 @@ Return : Leaf Node Pointer that can include the key.
 
 Node* findLeaf(int64_t key, off_t* off_leaf, int* pin_loc){
 	// If it is empty, return NULL
-	if (head -> number_of_pages == 0){
+	if (head[g_table_id] -> number_of_pages == 0){
 		return NULL;
 	}
 
-	off_t off_root = head -> root_page;
+	off_t off_root = head[g_table_id] -> root_page;
 
 	int loc = readFromBuffer(off_root);
 	Node* I = &BufferPool[loc];
@@ -692,7 +691,7 @@ int insertEntryIndex(Node* I, off_t off_I, int64_t key, off_t page_offset){
 			I -> parent_page_offset = off_parent;
 			Node* root_node = getNewInternalNode();
 
-			head -> root_page = off_parent;
+			head[g_table_id] -> root_page = off_parent;
 			root_node -> left_most_offset = off_I;
 			insertInIndex(root_node, v_prime, off_right_internal_node);
 			writeInBuffer(root_node, off_parent);
@@ -738,12 +737,10 @@ int insert(int table_id, int64_t key, char* value){
 	// If it is emtpy, make new leaf node and insert data in it.
 	if (L == NULL) {
 		off_t off_new = getNewPage();
-		head -> root_page = off_new;
+		head[g_table_id] -> root_page = off_new;
 		L = getNewLeafNode();
 		insertInLeaf(L,key,value);
 		writeInBuffer(L, off_new);
-		writeInFile(head, 0);
-		fflush(fp[g_table_id]);
 		FREE(L);
 		return 0;
 	}
@@ -775,7 +772,7 @@ int insert(int table_id, int64_t key, char* value){
 			parent -> left_most_offset =  off_L;
 			insertInIndex(parent, v_prime, off_right);
 
-			head -> root_page = off_parent;
+			head[g_table_id] -> root_page = off_parent;
 
 			writeInBuffer(parent, off_parent);
 
@@ -795,8 +792,6 @@ int insert(int table_id, int64_t key, char* value){
 	}
 	pin_count[pin_loc]--;
 	memcpy(&(BufferPool[pin_loc]), L, sizeof(Node));
-	writeInFile(head, 0);
-	fflush(fp[g_table_id]);
 	return 0;
 }
 
@@ -809,11 +804,11 @@ void deletePage(off_t off_delete){
 
 	Node* tmp = getNewLeafNode();
 
-	tmp -> parent_page_offset = head -> free_page;
-	head -> free_page = off_delete;
-	(head -> number_of_pages)--;
+	tmp -> parent_page_offset = head[g_table_id] -> free_page;
+	head[g_table_id] -> free_page = off_delete;
+	(head[g_table_id] -> number_of_pages)--;
 	// If it is empty tree, initialize header page.
-	if (head -> number_of_pages == 0) {
+	if (head[g_table_id] -> number_of_pages == 0) {
 		headerInit();
 	} else {
 	}
@@ -1068,7 +1063,7 @@ void deleteEntryIndex(int index, off_t off_I){
 		int n_loc = readFromBuffer(tmp_page_offset);
 		Node* new_root = &BufferPool[n_loc];
 		new_root -> parent_page_offset = 0;
-		head -> root_page = tmp_page_offset;
+		head[g_table_id] -> root_page = tmp_page_offset;
 		deletePage(off_I);
 		free_slot[loc] = 0;
 		pin_count[loc]--;
@@ -1203,8 +1198,6 @@ int delete (int table_id, int64_t key){
 		} else {
 		}
 		pin_count[pin_loc]--;
-		writeInFile(head, 0);
-		fflush(fp[g_table_id]);
 		return 0;
 	}
 
@@ -1268,8 +1261,6 @@ int delete (int table_id, int64_t key){
 			}
 		}
 	}
-	writeInFile(head, 0);
-	fflush(fp[g_table_id]);
 	pin_count[pin_loc]--;
 	if (l_loc != -1) pin_count[l_loc]--;
 	if (r_loc != -1) pin_count[r_loc]--;
@@ -1330,6 +1321,8 @@ int close_table(int table_id) {
 			memset(&BufferPool[i], 0x00, sizeof(Node));
 		}
 	}
+	writeInFile(head[table_id], 0);
+	FREE(head[table_id]);
 	//printf("Cache Hit per Access : %llu / %llu. Cache Ratio :  %Lf\n", cache_hit,cache_access, (long double)cache_hit / cache_access);
 	fclose(fp[table_id]);
 	return 0;
@@ -1346,11 +1339,18 @@ int shutdown_db(void){
 			fflush(fp[g_table_id]);
 		}
 	}
+	for (int i = 1; i < 11; ++i) {
+		if (head[i] != NULL) {
+			g_table_id = i;
+			writeInFile(head[i], 0);
+			fflush(fp[g_table_id]);
+			FREE(head[i]);
+		}
+	}
 	FILE* tmp = fopen(tableschema, "w");
 	fseek(tmp, 0, SEEK_SET);
 	fwrite(TM, sizeof(TableManager), 1, tmp);
 	fclose(tmp);
-	FREE(head);
 	FREE(TM);
 	FREE(BufferPool);
 	FREE(dirty_slot);
