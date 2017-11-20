@@ -146,8 +146,8 @@ int g_clock;
 int g_table_id;
 int g_buf_num;
 
-long long unsigned int cache_access;
-long long unsigned int cache_hit;
+//long long unsigned int cache_access;
+//long long unsigned int cache_hit;
 int init_db(int buf_num);
 int close_table(int table_id);
 int shutdown_db(void);

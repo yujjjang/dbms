@@ -24,8 +24,8 @@ void headerInit(){
  **/
 
 int open_table(char* pathname){
-	cache_access = 0;
-	cache_hit = 0;
+	//cache_access = 0;
+	//cache_hit = 0;
 	int check = 1;
 	for (int i = 1; i < 11; ++i) {
 		if (!(strcmp((TM -> pathname)[i], pathname))) {
@@ -45,10 +45,10 @@ int open_table(char* pathname){
 		}
 	}
 	if ((fp[g_table_id] = fopen(pathname, "r+c")) == NULL) {
-		
+
 		fp[g_table_id] = fopen(pathname, "w+c"); // If not exist, open with "w+c"
 		headerInit();
-	
+
 	} else {
 		getHeaderPage();
 	}
@@ -252,7 +252,7 @@ char* find(int table_id, int64_t key){
 
 	int loc = readFromBuffer(off_root);
 	Node* I = &BufferPool[loc];
-	
+
 	int index;
 	off_t off_tmp;
 
@@ -806,7 +806,7 @@ int insert(int table_id, int64_t key, char* value){
  **/
 
 void deletePage(off_t off_delete){
-	
+
 	Node* tmp = getNewLeafNode();
 
 	tmp -> parent_page_offset = head -> free_page;
@@ -1132,7 +1132,7 @@ void deleteEntryIndex(int index, off_t off_I){
 				deleteEntryIndex(pos, off_parent);
 				deletePage(off_I);
 				free_slot[loc] = 0;
-			// merge with right one.
+				// merge with right one.
 			} else if (off_right != -1) {
 				tmp_key = (parent -> indexes)[pos + 1].key;
 				tmp_page_offset = right_node -> left_most_offset;
@@ -1170,7 +1170,7 @@ void deleteEntryIndex(int index, off_t off_I){
 	Case 1> Delete the key. If there is no need to merge or redistribution, return.
 	Case 2> In case of redistribution, borrow record from sibling. Then return.
 	Case 3> In case of merge, Do merge with sibling, then delete key and offset in parent.
-	
+
 Return : 0 If success to delete, -1 if fail to delete.
  **/
 
@@ -1253,7 +1253,7 @@ int delete (int table_id, int64_t key){
 				deleteEntryIndex(pos, off_parent);
 				deletePage(off_L);
 				free_slot[pin_loc] = 0;
-			// merge with right one.
+				// merge with right one.
 			} else if (off_right != -1) {
 
 				mappingInRecord(L -> records, L -> number_of_keys, right_node -> records, 0, right_node -> number_of_keys);
@@ -1275,7 +1275,9 @@ int delete (int table_id, int64_t key){
 	if (r_loc != -1) pin_count[r_loc]--;
 	return 0;
 }
-
+/**
+	This function is used to initialize buffer.
+ **/
 int init_db(int buf_num) {
 	TM = (TableManager*) malloc (sizeof(TableManager));
 	memset(TM, 0x00, sizeof(TableManager));
@@ -1290,7 +1292,7 @@ int init_db(int buf_num) {
 			strcpy((TM -> pathname)[i], "EMPTY");
 		}
 	}
-	
+
 	dirty_slot = (short*) malloc (sizeof(short) * buf_num);
 	pin_count = (int*) malloc (sizeof(int) * buf_num);
 	offset_slot = (int64_t*) malloc (sizeof(int64_t) * buf_num);
@@ -1298,7 +1300,7 @@ int init_db(int buf_num) {
 	ref_slot = (short*) malloc (sizeof(short) * buf_num);
 	BufferPool = (Node*) malloc (BLOCK_SIZE * buf_num);
 	table_id_slot = (int*) malloc (sizeof(int) * buf_num);
-	
+
 	memset(dirty_slot, 0x00, sizeof(short) * buf_num);
 	memset(pin_count, 0x00, sizeof(int) * buf_num);
 	memset(offset_slot, 0x00, sizeof(int64_t) * buf_num);
@@ -1310,7 +1312,9 @@ int init_db(int buf_num) {
 	g_buf_num = buf_num;
 	return 0;
 }
-
+/**
+	This function is used to close the table whose id is the given table id.
+ **/
 int close_table(int table_id) {
 	g_table_id = table_id;
 	for (int i = 0; i < g_buf_num; ++i) {
@@ -1330,6 +1334,10 @@ int close_table(int table_id) {
 	fclose(fp[table_id]);
 	return 0;
 }
+
+/**
+	This function is used to shut down database. It write the all data in buffer before closing.
+ **/
 int shutdown_db(void){
 	for (int i = 0; i < g_buf_num; ++i) {
 		if (free_slot[i] != 0 && dirty_slot[i] == 1) {
@@ -1344,14 +1352,17 @@ int shutdown_db(void){
 	fclose(tmp);
 	FREE(head);
 	FREE(TM);
-	/*FREE(BufferPool);
+	FREE(BufferPool);
 	FREE(dirty_slot);
 	FREE(pin_count);
 	FREE(table_id_slot);
 	FREE(offset_slot);
-	FREE(ref_slot);*/
+	FREE(ref_slot);
+	return 0;
 }
-
+/**
+	This function is used to replace the page in buffer whether dirty or not. My database is following clock replacement algorithm.
+ **/
 void clockReplacement() {
 	while(1) {
 		if (pin_count[g_clock] != 0) {
@@ -1371,9 +1382,11 @@ void clockReplacement() {
 				}
 			}
 		}
+	}
 }
-}
-
+/**
+	When you make new node or page, this function is called. Instead of writing in file, this function writes the node or page in buffer not file.
+ **/
 void writeInBuffer(Node* node, int64_t offset) {
 	for (int i = 0; i < g_buf_num; ++i) {
 		if (free_slot[i] == 0) {
@@ -1396,18 +1409,20 @@ void writeInBuffer(Node* node, int64_t offset) {
 	free_slot[pos] = 1;
 	ref_slot[pos] = 2;
 	memcpy(&(BufferPool)[pos], node, sizeof(Node));
-	
-}
 
+}
+/**
+	This function is used to check the buffer before reading from file. If already exists, it returns its unique number. If not, it reads the data from file and put it in buffer.
+ **/
 int readFromBuffer(int64_t offset) {
-	cache_access++;
+	//cache_access++;
 	short check = 0;
 	for (int i = 0; i < g_buf_num; ++i) {
 		if (table_id_slot[i] == g_table_id && offset_slot[i] == offset && free_slot[i] == 1) {
 			pin_count[i]++;
 			ref_slot[i] = 2;
 			dirty_slot[i] = 1;
-			cache_hit++;
+			//cache_hit++;
 			return i;
 		}
 	}
