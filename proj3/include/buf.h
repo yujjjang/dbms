@@ -19,7 +19,7 @@ typedef struct _BufPool {
     int tot_pincnt;
 } BufPool;
 
-void init_new_header_page(HeaderPage *header_page, int table_id);
+void init_new_header_page(HeaderPage *header_page, int table_id, int num_column);
 
 void load_header_page(Table *table);
 
@@ -27,9 +27,13 @@ Page* alloc_page(Table *table);
 
 Page* get_page(Table *table, pagenum_t pagenum);
 
+Page* get_page(Table *table, pagenum_t pagenum, int* buf_page_i);
+
 void release_header_page(Table *table);
 
 void release_page(Page* page);
+
+void release_page(Page* page, int* buf_page_i);
 
 void set_dirty_page(Page* page);
 
@@ -45,7 +49,7 @@ void print_buf_pool();
 
 #define BUF_PAGE_MUTEX_FAIL -930209
 #define BUF_POOL_MUTEX_ENTER do {\
-	unique_lock<std::mutex> buf_pool_latch(pool.buf_pool_mutex);\
+	std::unique_lock<std::mutex> buf_pool_latch(pool.buf_pool_mutex);\
 } while(0);
 
 #define BUF_PAGE_MUTEX_ENTER(i)\

@@ -10,7 +10,7 @@
 #include "buf.h"
 #include "panic.h"
 
-static BufPool pool;
+BufPool pool;
 
 /* Flush the page.
  */
@@ -85,13 +85,14 @@ void update_lru(Page* page){
 
 /* Initialize header page.
  */
-void init_new_header_page(HeaderPage* header, int table_id) {
+void init_new_header_page(HeaderPage* header, int table_id, int num_column) {
     memset(header, 0, sizeof(HeaderPage));
 
     header->table_id = table_id;
     header->pagenum = 0;
     header->freelist = 0;
     header->root_offset = 0;
+		header->num_column = num_column;
     header->num_pages = 1;
     set_dirty_page((Page*)header);
     header->pincnt++;
@@ -179,7 +180,8 @@ Page* get_page(Table* table, pagenum_t pagenum, int* buf_page_i) {
         if (pool.pages[i].table_id == table->table_id &&
                 pool.pages[i].pagenum == pagenum){
 					// Only Leaf page latch exists.
-					if (((LeafPage*)pool.pages[i])->is_leaf) {
+					new_page = &pool.pages[i];
+					if (((LeafPage*)new_page) -> is_leaf) {
 						BUF_PAGE_MUTEX_ENTER(i);
 						// Success to acquire latch.
 						if (ret) {
@@ -195,61 +197,7 @@ Page* get_page(Table* table, pagenum_t pagenum, int* buf_page_i) {
 						pool.pages[i].pincnt++;
 						pool.tot_pincnt++;
 						return &pool.pages[i];
-        }
-    }
-
-    if (!new_page){
-        if ((new_page = evict_page()) == NULL){
-            PANIC("Not enough buffer\n");
-        }
-        if (new_page->is_dirty){
-            flush_page(new_page);
-        }
-    }
-		BUF_PAGE_MUTEX_ENTER(i);
-    if (!ret)
-			PANIC("Evicted page hold the latch\n");
-
-		file_read_page(table, pagenum, new_page);
-    new_page->table_id = table->table_id;
-    new_page->pagenum = pagenum;
-    new_page->pincnt = 1;
-    pool.tot_pincnt++;
-		*buf_page_i = new_page_i;
-    push_to_lru(new_page);
-    return new_page;
-}
-
-Page* get_page(Table* table, pagenum_t pagenum, int buf_page_i) {
-  BUF_POOL_MUTEX_ENTER; //TODO
-	BUF_PAGE_MUTEX_ENTER(i);
-	Page* new_page = NULL;
-    int i;
-		int new_page_i = 0;
-    for (i = 0; i < pool.num_buf; i++){
-        if (!new_page && pool.pages[i].table_id == 0){
-            new_page = &pool.pages[i];
-						new_page_i = i;
-        }
-        if (pool.pages[i].table_id == table->table_id &&
-                pool.pages[i].pagenum == pagenum){
-					// Only Leaf page latch exists.
-					if (((LeafPage*)pool.pages[i])->is_leaf) {
-						BUF_PAGE_MUTEX_ENTER(i);
-						// Success to acquire latch.
-						if (ret) {
-							*buf_page_i = i;
-							pool.pages[i].pincnt++;
-       		    pool.tot_pincnt++;
-       	 	   return &pool.pages[i];	
-						// Fail to acquire latch.
-						} else {
-							return nullptr;
-						}
-					} else {
-						pool.pages[i].pincnt++;
-						pool.tot_pincnt++;
-						return &pool.pages[i];
+					}
         }
     }
 
@@ -336,7 +284,7 @@ void flush_table(Table* table) {
  */
 int init_buf_pool(int num_buf) {
     pool.pages = (Page*) calloc(num_buf, sizeof(Page));
-		pool.buf_page_mutex = new mutex[num_buf];
+		pool.buf_page_mutex = new std::mutex[num_buf];
     
 		pool.lru_head = NULL;
     pool.lru_tail = NULL;
@@ -349,7 +297,7 @@ int init_buf_pool(int num_buf) {
  */
 int destroy_buf_pool() {
     free(pool.pages);
-		delete[] buf_page_mutex;
+		delete[] pool.buf_page_mutex;
     
 		pool.pages = NULL;
     pool.lru_head = NULL;

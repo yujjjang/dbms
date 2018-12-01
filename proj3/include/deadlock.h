@@ -1,3 +1,6 @@
+#ifndef __DEADLOCK__H__
+#define __DEADLOCK__H__
+
 #include <unordered_map>
 #include <vector>
 #include <stack>
@@ -6,6 +9,7 @@
 
 class DLChecker {
 	struct tarjan_t {
+		tarjan_t(){};
 		tarjan_t(int wait_for) : waiting_trx_id(wait_for), finished(false), dfs_order(-1) {};
 		int waiting_trx_id;
 		bool finished;
@@ -30,6 +34,9 @@ class DLChecker {
 		DLChecker(): dfs_order(-1), cycle_flag(false), latest_trx_id(0) {};
 		~DLChecker(){};
 		
-		bool change_wating_list(int trx_id, int o_wait_for, int n_wait_for);
+		bool change_waiting_list(int trx_id, int wait_for);
 		bool deadlock_checking(int trx_id, int wait_for);
+		void delete_waiting_for_trx(int trx_id);
 };
+
+#endif

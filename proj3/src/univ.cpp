@@ -5,6 +5,10 @@
  * if the verbose flag is set.
  * Returns the leaf containing the given key.
  */
+
+extern BufPool pool;
+extern LockManager lock_sys;
+
 bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node) {
 		// unique_lock<mutex> buf_latch(pool.buf_pool_mutex);
 		
@@ -96,9 +100,9 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_pag
 /* Finds and returns the value to which
  * a key refers.
  */
-char* find_record(Table* table, int64_t key) {
+int64_t* find_record(Table* table, int64_t key) {
     int i = 0;
-    char* out_value;
+    int64_t* out_value;
 
     LeafPage* leaf_node;
     if (!find_leaf(table, key, &leaf_node)) {
@@ -107,7 +111,7 @@ char* find_record(Table* table, int64_t key) {
 		
     for (i = 0; i < leaf_node->num_keys; i++) {
         if (LEAF_KEY(leaf_node, i) == key) {
-            out_value = (char*)malloc(SIZE_VALUE * sizeof(char));
+            out_value = (int64_t*)malloc(SIZE_COLUMN * sizeof(int64_t));
             memcpy(out_value, LEAF_VALUE(leaf_node, i), SIZE_VALUE);
             release_page((Page*)leaf_node);
             return out_value;
@@ -123,10 +127,10 @@ char* find_record(Table* table, int64_t key) {
  * Function when executing in transaction.
  */
 
-char* find_record(Table* table, int64_t key, trx_t* trx) {
+int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
     int i = 0;
 		int buf_page_i = 0;
-    char* out_value;
+    int64_t* out_value;
 
     LeafPage* leaf_node;
 	
@@ -139,17 +143,17 @@ char* find_record(Table* table, int64_t key, trx_t* trx) {
 		
 		// Transaction get the buf_page_mutex.
 		// Buffer block index  = buf_page_i.
-
+		/*
 		if (lock_sys->acquire_lock()) {
 			// OK
 		} else {
 			// DEADLOCK -> ABORT !
 			return NULL;
 		}
-		
+		*/
     for (i = 0; i < leaf_node->num_keys; i++) {
         if (LEAF_KEY(leaf_node, i) == key) {
-            out_value = (char*)malloc(SIZE_VALUE * sizeof(char));
+            out_value = (int64_t*)malloc(SIZE_COLUMN * sizeof(int64_t));
             memcpy(out_value, LEAF_VALUE(leaf_node, i), SIZE_VALUE);
             release_page((Page*)leaf_node, &buf_page_i);
             return out_value;

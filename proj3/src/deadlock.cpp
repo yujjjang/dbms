@@ -1,7 +1,8 @@
 #include "deadlock.h"
 
 void DLChecker::initialize_tarjan_acyclic() {
-	s_tarjan.clear();
+	while(!s_tarjan.empty())
+		s_tarjan.pop();
 	dfs_order = -1;
 	cycle_flag = false;
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
@@ -11,11 +12,12 @@ void DLChecker::initialize_tarjan_acyclic() {
 }
 
 void DLChecker::initialize_tarjan_cyclic() {
-	s_tarjan.clear();
+	while(!s_tarjan.empty())
+		s_tarjan.pop();
 	dfs_order = -1;
 	cycle_flag = false;
 	dl_graph.erase(latest_trx_id);
-	vector<int> erase_list;
+	std::vector<int> erase_list;
 	
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		if ((it -> second).waiting_trx_id == latest_trx_id)
@@ -33,7 +35,7 @@ void DLChecker::initialize_tarjan_cyclic() {
 
 int DLChecker::dfs_tarjan(tarjan_t* cur) {
 	cur->dfs_order = this->dfs_order++;
-	s_tarjan.push_back(cur);
+	s_tarjan.push(cur);
 
 	int min_order = cur->dfs_order;
 	
@@ -64,18 +66,18 @@ int DLChecker::dfs_tarjan(tarjan_t* cur) {
 
 bool DLChecker::is_cyclic() {
 	// Tarjan's algorithm.
-	for (auto it = dl_graph.begin(); it != dl_graph.end() ++it) {
+	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		
 		if (it->second.dfs_order == -1)
 			dfs_tarjan(&(it->second));
 		
 		if (cycle_flag) {
-			initialize_tarjan_cycle();
+			initialize_tarjan_cyclic();
 			return true;
 		}
 	}
 
-	initialize_tarjan_acycle();
+	initialize_tarjan_acyclic();
 	return false;
 }
 
@@ -91,4 +93,21 @@ bool DLChecker::deadlock_checking(int trx_id, int wait_for) {
 	latest_trx_id = trx_id;
 
 	return is_cyclic();
+}
+
+void DLChecker::delete_waiting_for_trx(int trx_id) {
+	std::vector<int> erase_list;
+
+	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
+		if ((it -> second).waiting_trx_id == trx_id)
+			erase_list.push_back(it -> first);
+	}
+
+	for (auto i : erase_list)
+		dl_graph.erase(i);
+}
+bool DLChecker::change_waiting_list(int trx_id, int wait_for) {
+
+	return true;
+
 }

@@ -5,21 +5,20 @@
 int init_db(int num_buf); // TODO
 int shutdown_db();
 
-int open_table(char* filename);
+int open_table(char* filename, int num_column);
 int close_table(int table_id);
 
 // Add trx_id in parameter.
-char* find(int table_id, int64_t key);
-int insert(int table_id, int64_t key, const char* value);
+int64_t* find(int table_id, int64_t key);
+int insert(int table_id, int64_t key, int64_t* value);
 int remove(int table_id, int64_t key);
-int update(int table_id, int64_t key, const char* value);
 
 // API for transaction.
-char* find(int table_id, int64_t key, int trx_id);
+int64_t* find(int table_id, int64_t key, int trx_id, int* result);
+int update(int table_id, int64_t key, int64_t* value, int trx_id, int* result);
 
-int begin_transaction(int table_id);
-bool commit_transaction(int table_id, int trx_id);
-bool abort_transaction(int table_id, int trx_id);
+int begin_tx();
+bool end_tx(int trx_id);
 
 void print_tree(int table_id);
 void find_and_print(int table_id, int64_t key); 

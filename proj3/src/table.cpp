@@ -28,7 +28,7 @@ Table* get_table(int table_id) {
 }
 
 // Opens a db file or creates a new file if not exist.
-int open_or_create_table_file(const char* filename) {
+int open_or_create_table_file(const char* filename, int num_column) {
     int table_id = alloc_table();
     Table* table;
 
@@ -43,7 +43,7 @@ int open_or_create_table_file(const char* filename) {
         if (table->dbfile < 0) {
             PANIC("failed to create new db file");
         }
-        init_new_header_page(&table->dbheader, table_id);
+        init_new_header_page(&table->dbheader, table_id, num_column);
     } else {
         // DB file exists. Loads header info
         load_header_page(table);

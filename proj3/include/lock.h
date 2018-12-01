@@ -9,21 +9,21 @@
 #include <unordered_set>
 
 #include "page.h"
+#include "table.h"
 #include "trx.h"
 #include "types.h"
 #include "panic.h"
 #include "deadlock.h"
+
 class trx_t;
+extern TransactionManager trx_sys;
 
-
-typedef uint64_t trx_id_t;
-
-typedef enum {LOCK_S=0, LOCK_X} LockMode;
 
 typedef struct lock_t {
-	lock_t(int table_id, trx_id_t trx_id, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i) :
-		table_id(table_id), trx_id(trx_id), page_id(page_id), key(key), lock_mode(lock_mode), buf_page_i(buf_page_i), prev(nullptr), next(nullptr) {};
-	table_id table_id;
+	lock_t(int table_id, trx_id_t trx_id, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i, lock_t* wait_lock) :
+		table_id(table_id), trx_id(trx_id), page_id(page_id), key(key), lock_mode(lock_mode), buf_page_i(buf_page_i), 
+		prev(nullptr), next(nullptr) ,wait_lock(wait_lock) {};
+	int table_id;
 	trx_id_t trx_id;
 	pagenum_t page_id;
 	int64_t key;
@@ -31,8 +31,10 @@ typedef struct lock_t {
 	LockMode lock_mode;
 	int buf_page_i;
 
-	lock_t* prev; // Waiting for prev.
-	lock_t* next;	// Waiting for cur.
+	lock_t* prev;
+	lock_t* next;
+
+	lock_t* wait_lock;
 } lock_t;
 	
 typedef struct lock_page_t {
@@ -42,6 +44,7 @@ typedef struct lock_page_t {
 class LockManager {
 	
 	private:
+		DLChecker dl_checker;
 		std::mutex lock_sys_mutex;
 		std::condition_variable lock_sys_cv;
 		// The hash table keyed on "page number (id) "
@@ -61,13 +64,12 @@ class LockManager {
 		/**
 			* You should implement these functions below.
 			*/
-		bool acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode);
-		void release_lock_low(trx_t*, pagenum_t, int64_t key, LockMode lock_mode);
+		bool acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode, int buf_page_i);
+		void release_lock_low(trx_t*, lock_t*);
 		bool release_lock(trx_t*); 
 };
 
-#define LOCK_SYS_MUTEX_ENTER do {\
+#define LOCK_SYS_MUTEX_ENTER \
 	std::unique_lock<std::mutex> l_mutex(lock_sys_mutex);\
-} while(0);
 
 #endif /* LOCK_HPP */

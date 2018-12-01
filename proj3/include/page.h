@@ -10,6 +10,7 @@
 #define PAGE_SIZE                   4096
 
 #define SIZE_KEY                    8
+#define SIZE_COLUMN  								15
 #define SIZE_VALUE                  120
 #define SIZE_RECORD                 (SIZE_KEY + SIZE_VALUE)
 
@@ -31,7 +32,7 @@ typedef uint64_t pagenum_t;
  */
 typedef struct _Record {
     int64_t key;
-    char value[SIZE_VALUE];
+    int64_t value[SIZE_COLUMN];
 } Record;
 
 typedef struct _InternalRecord {
@@ -66,7 +67,8 @@ typedef struct _HeaderPage {
     off_t freelist;
     off_t root_offset;
     uint64_t num_pages;
-    char reserved[PAGE_SIZE - 24];
+		off_t num_column;
+    char reserved[PAGE_SIZE - 32];
 
     // in-memory data
     INMEM_PAGE;

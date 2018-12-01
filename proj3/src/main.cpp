@@ -10,16 +10,17 @@
 // MAIN
 int main( int argc, char ** argv ) {
     int64_t input_key;
-    char input_value[SIZE_VALUE];
+    int64_t input_value[SIZE_COLUMN];
     char instruction;
     int table_id;
+		
 
     license_notice();
     usage_1();  
     usage_2();
 
     init_db(1000);
-    table_id = open_table("test.db");
+    table_id = open_table("test.db", 15);
     print_tree(table_id);
     printf("> ");
     while (scanf("%c", &instruction) != EOF) {

@@ -19,6 +19,7 @@ SRCS_FOR_LIB:= \
 	$(SRCDIR)update.cpp \
 	$(SRCDIR)delete.cpp \
 	$(SRCDIR)insert.cpp \
+	$(SRCDIR)deadlock.cpp \
 	$(SRCDIR)trx.cpp \
 	$(SRCDIR)lock.cpp \
 	$(SRCDIR)bpt_ext.cpp \

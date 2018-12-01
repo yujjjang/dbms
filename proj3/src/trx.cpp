@@ -1,6 +1,6 @@
-#include "../include/trx.h"
+#include "trx.h"
 
-static TransactionManager trx_sys;
+TransactionManager trx_sys;
 
 TransactionManager::~TransactionManager() {
 	for (auto it = active_trx.begin(); it != active_trx.end(); ++it) {
@@ -16,7 +16,7 @@ trx_t* TransactionManager::makeNewTransaction() {
 	return new_trx;
 }
 
-trx_t* TransactionManager::getTranscation(trx_id_t trx_id) {
+trx_t* TransactionManager::getTransaction(trx_id_t trx_id) {
 	if (active_trx.count(trx_id) != 0)
 			return active_trx[trx_id];
 	else
@@ -25,14 +25,15 @@ trx_t* TransactionManager::getTranscation(trx_id_t trx_id) {
 
 bool TransactionManager::deleteTransaction(trx_id_t trx_id) {
 	trx_t* trx = getTransaction(trx_id);
-	
 	if (!trx)
 		return false;
-
+	
+	trx_t* trx_ptr = nullptr;
+	
 	for (auto it = active_trx.begin(); it != active_trx.end(); ++it) {
-		if (*it == trx){
-			trx_ptr = *it;
-			active_trx.remove(*it);
+		if (it -> first == trx_id){
+			trx_ptr = it -> second;
+			active_trx.erase(trx_id);
 			delete trx_ptr;
 			return true;
 		}

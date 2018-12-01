@@ -11,14 +11,12 @@ typedef struct _Table {
   int dbfile;
   int table_id;		
 
-	LockManager* lock_sys;         // Each table has LM & TM.
-	TransactionManager* trx_sys;		// TODO
 } Table;
 
 #define MAX_NUM_TABLE 10
 
 // DB initialization.
-int open_or_create_table_file(const char* filename);
+int open_or_create_table_file(const char* filename, int num_column);
 
 int close_table_file(Table *table);
 // Should add function for LM & TM.

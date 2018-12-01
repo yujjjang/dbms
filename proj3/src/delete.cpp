@@ -464,7 +464,7 @@ void delete_entry(Table* table, NodePage* node_page, int64_t key) {
 /* Master deletion function.
  */
 int delete_record(Table* table, int64_t key) {
-    char* value_found = NULL;
+    int64_t* value_found = NULL;
     if ((value_found = find_record(table, key)) == 0) {
         // This key is not in the tree
         free(value_found);

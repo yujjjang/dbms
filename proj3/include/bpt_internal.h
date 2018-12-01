@@ -62,6 +62,8 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include "types.h"
 #include "page.h"
 #include "table.h"
 #include "file.h"
@@ -97,31 +99,42 @@
 // GLOBALS.
 extern int order_internal;
 extern int order_leaf;
+extern TransactionManager trx_sys;
+extern LockManager lock_sys;
 
 // Transaction's State
 #define NONE 		0
 #define RUNNING 1
 #define ABORTED 2
+// Lock Mode.
+#define LOCK_S 0
+#define LOCK_X 1
+
+typedef int trx_id_t;
+typedef int State;
+typedef int LockMode;
 
 // FUNCTION PROTOTYPES.
 
 // Output and utility.
 bool find_leaf(Table *table, int64_t key, LeafPage** out_leaf_node);
-char *find_record(Table *table, int64_t key);
-char *find_record(Table *table, int64_t key, trx_t* trx);
+bool find_leaf(Table *table, int64_t key, LeafPage** out_leaf_node, int* buf_page_i);
+int64_t *find_record(Table *table, int64_t key);
+int64_t *find_record(Table *table, int64_t key, trx_t* trx);
+
 // Helper function
 int cut( int length );
 
 // Update.
 
-int update_record(Table* table, int64_t key, const char* value);
+int update_record(Table* table, int64_t key, int64_t* value, trx_t* trx);
 
 // Insertion.
-void start_new_tree(Table *table, int64_t key, const char* value);
+void start_new_tree(Table *table, int64_t key, int64_t* value);
 void insert_into_leaf(Table *table, LeafPage* leaf_node, int64_t key,
-        const char* value);
+        int64_t* value);
 void insert_into_leaf_after_splitting(Table *table, LeafPage* leaf_node,
-        int64_t key, const char* value);
+        int64_t key, int64_t* value);
 void insert_into_parent(Table *table, NodePage* left, int64_t key,
         NodePage* right);
 void insert_into_new_root(Table *table, NodePage* left, int64_t key,
@@ -131,7 +144,7 @@ void insert_into_node(Table *table, InternalPage * parent, int left_index,
         int64_t key, off_t right_offset);
 void insert_into_node_after_splitting(Table *table, InternalPage* parent,
         int left_index, int64_t key, off_t right_offset);
-int insert_record(Table *table, int64_t key, const char* value);
+int insert_record(Table *table, int64_t key, int64_t* value);
 
 // Deletion.
 int get_neighbor_index(Table *table, NodePage* node_page);

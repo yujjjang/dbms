@@ -1,6 +1,7 @@
 ./include/bpt.h
 ./include/bpt_internal.h
 ./include/buf.h
+./include/deadlock.h
 ./include/file.h
 ./include/lock.h
 ./include/page.h
@@ -10,6 +11,7 @@
 ./include/types.h
 ./src/bpt_ext.cpp
 ./src/buf.cpp
+./src/deadlock.cpp
 ./src/delete.cpp
 ./src/file.cpp
 ./src/global_vars.cpp

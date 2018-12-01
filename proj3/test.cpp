@@ -1,6 +1,8 @@
+#include <mutex>
+#include <condition_variable>
 #include <unordered_map>
 #include <iostream>
-
+#include <list>
 #include <vector>
 #include <stack>
 #include <algorithm>
@@ -45,7 +47,7 @@ class DLChecker {
 		}
 		cur -> finished = true;
 		return min_order;
-	};
+	}
 	bool cycle_flag = false;
 	std::unordered_map<int, tarjan_t>  dl_graph;
 	
@@ -63,17 +65,38 @@ class DLChecker {
 	bool deadlock_checking(int trx_id, int wait_for);
 };
 
-int main(){
-	DLChecker dl;
-	tarjan_t a;
-	a.waiting_trx_id = 2;
-	tarjan_t b;
-	b.waiting_trx_id = 1;
-	dl.dl_graph[1] = a;
-	dl.dl_graph[2] = b;
 
-	bool ret = dl.is_cyclic();
-	cout << ret << endl;
+int main(){
+	list<int> li;
+
+	li.push_back(1);
+	li.push_back(2);
+
+	int* ptr = &li.back();
+	for (auto i : li)
+		cout << i << endl;
+
+	*ptr = 3;
+
+	for (auto i : li)
+		cout << i << endl;
+	
+	mutex mut;
+	condition_variable cv;
+	mut.lock();
+	cv.notify_all();
+	cout << "HAHA" << endl;
+
+	mut.unlock();
+	typedef int State;
+	State i = 1;
+	struct KKK {
+		KKK(int a, int b) : a(a), b(b) {};
+		int a;
+		int b;
+	};
+
+	KKK(3,5);
 	return 0;
 }
 

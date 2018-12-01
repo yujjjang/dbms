@@ -13,7 +13,7 @@ int get_left_index(Table* table, InternalPage* parent, off_t left_offset) {
 
 /* Inserts a new value and its corresponding key into a leaf.
  */
-void insert_into_leaf(Table* table, LeafPage* leaf_node, int64_t key, const char* value) {
+void insert_into_leaf(Table* table, LeafPage* leaf_node, int64_t key, int64_t* value) {
     int insertion_point;
     int i;
 
@@ -41,7 +41,7 @@ void insert_into_leaf(Table* table, LeafPage* leaf_node, int64_t key, const char
  * the leaf to be split in half.
  */
 void insert_into_leaf_after_splitting(Table* table, LeafPage* leaf, int64_t key,
-        const char* value) {
+        int64_t* value) {
     int insertion_index, split, i, j;
     int64_t new_key;
 
@@ -289,7 +289,7 @@ void insert_into_new_root(Table* table, NodePage* left, int64_t key, NodePage* r
 }
 /* First insertion: start a new tree.
  */
-void start_new_tree(Table* table, int64_t key, const char* value) {
+void start_new_tree(Table* table, int64_t key, int64_t* value) {
     LeafPage* root_node = (LeafPage*)alloc_page(table);
     root_node->parent = 0;
     root_node->is_leaf = 1;
@@ -308,8 +308,8 @@ void start_new_tree(Table* table, int64_t key, const char* value) {
  * Inserts a key and an associated value into the B+ tree, causing the tree to
  * be adjusted however necessary to maintain the B+ tree properties.
  */
-int insert_record(Table* table, int64_t key, const char* value) {
-    char* value_found = NULL;
+int insert_record(Table* table, int64_t key, int64_t* value) {
+    int64_t* value_found = NULL;
 
     /* The current implementation ignores duplicates.
      */

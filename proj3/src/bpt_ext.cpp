@@ -1,5 +1,6 @@
 #include "bpt_internal.h"
 
+
 int init_db(int num_buf) {
     return init_buf_pool(num_buf);
 }
@@ -9,8 +10,8 @@ int shutdown_db() {
 }
 
 // Opens a db file. Creates a file if not exist.
-int open_table(char* filename) {
-    return open_or_create_table_file(filename);
+int open_table(char* filename, int num_column) {
+    return open_or_create_table_file(filename, num_column);
 }
 
 // Closes the db file.
@@ -24,7 +25,7 @@ int close_table(int table_id) {
 // TODO
 /* Inserts a new record.
  */
-int insert(int table_id, int64_t key, const char* value) {
+int insert(int table_id, int64_t key, int64_t* value) {
     Table* table = get_table(table_id);
     return insert_record(table, key, value);
 }
@@ -38,67 +39,76 @@ int remove(int table_id, int64_t key) {
 
 /* Finds a value from key in the b+ tree.
  */
-char* find(int table_id, int64_t key) {
+int64_t* find(int table_id, int64_t key) {
     Table* table = get_table(table_id);
     
 		return find_record(table, key);
 }
 
-char* find(int table_id, int64_t key, int trx_id) {
+int64_t* find(int table_id, int64_t key, int trx_id, int* result) {
 	Table* table = get_table(table_id);
-	trx_t* trx = table->trx_sys;
+	TransactionManager* tm = &trx_sys;
+	trx_t* trx = tm -> getTransaction(trx_id);
+	
+	if (trx -> getState() == ABORTED) {
+		*result = 0;
+		return NULL;
+	}
+	*result = 1;
 	return find_record(table, key, trx);
 }
 
 /* Update a record old value to new value.
  */
-int update(int table_id, int64_t key, const char* value) {
+int update(int table_id, int64_t key, int64_t* value, int trx_id, int* result) {
 	Table* table = get_table(table_id);
-	return update_record(table, key, value);
+	TransactionManager* tm = &trx_sys;
+	
+	trx_t* trx = tm -> getTransaction(trx_id);
+	
+	if (trx -> getState() == ABORTED) {
+		*result = 0;
+		return -1;
+	}
+	*result = 1;
+	return update_record(table, key, value, trx);
 }
+
 /* Begin a new transaction.
  * Allocate transaction id from Transaction Manager. 
  * @return trx*.
  **/
-trx_t* begin_transaction(int table_id) {
-	Table* table = get_table(table_id);
-	TransactionManager* tm = table->trx_sys;
-	
+int begin_tx() {
+	TransactionManager* tm = &trx_sys;
 	trx_t* new_t = tm -> makeNewTransaction();
 
-	return new_t;
+	return new_t -> getTransactionId();
 }
 
-/* Commit transaction.
- * release all locks held by transaction.
- * If success, return true.
- * Otherwise return false.
- **/
-bool commit_transaction(int table_id, trx_t* trx) {
-	Table* table = get_table(table_id);
-	TransactionManager* tm = table->trx_sys;
-	bool ret = lm -> release_lock(trx) && tm -> deleteTransaction(trx);	
-	
-	if(!ret)
-		PANIC("Commit transaction."); //TODO
-	return ret;
+/**
+	* End the transaction whose trx_id is given transaction id.
+	* 1. Commit : If state is not ABORTED, Release all locks &  delete transaction object.
+	* 2. Abort :  If state is ABORTED, just delete transaction object.
+	*	
+	*/
+int end_tx(int trx_id) {
+	TransactionManager* tm = &trx_sys;
+	LockManager* lm = &lock_sys;
+
+	trx_t* end_t = tm -> getTransaction(trx_id);
+	bool ret;
+	if (end_t -> getState() == ABORTED) {
+		ret = tm->deleteTransaction(trx_id);
+	} else {
+		end_t -> setState(NONE);
+		ret = lm->release_lock(end_t) && tm -> deleteTransaction(trx_id);
+	}
+	if (!ret)
+		PANIC("end_tx.\n");
+
+	return 0;
 }
 
-/* Abort transaction.
- * Release all locks held by transaction.
- * If success, return true.
- * Otherwise return false.
- **/
-bool abort_transcation(int table_id, trx_t* trx) {
-	Table* table = get_table(table_id);
-	TransactionManager* tm = table->trx_sys;
-
-	bool ret = lm -> release_lock(trx) && tm -> deleteTransaction(trx);
-
-	if(!ret)
-		PANIC("abort transaction."); //TODO
-	return ret;
-}
 /* Prints the B+ tree in the command
  * line in level (rank) order, with the 
  * keys in each node and the '|' symbol
@@ -178,7 +188,7 @@ void print_tree(int table_id) {
  * appropriate message to stdout.
  */
 void find_and_print(int table_id, int64_t key) {
-    char* value_found = NULL;
+    int64_t* value_found = NULL;
     value_found = find(table_id, key);
     if (value_found == NULL) {
         printf("Record not found under key %" PRIu64 ".\n", key);
