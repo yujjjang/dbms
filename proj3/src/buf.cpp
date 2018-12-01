@@ -294,6 +294,15 @@ void release_page(Page* page) {
     page->pincnt--;
 }
 
+/**
+	* Basic function to release the page " In transaction ".
+	*/
+void release_page(Page* page, int* buf_page_i) {
+	pool.tot_pincnt--;
+	page->pincnt--;
+	pool.buf_page_mutex[*buf_page_i].unlock();
+}
+
 /* Mark dirty flag.
  */
 void set_dirty_page(Page* page) {

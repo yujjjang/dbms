@@ -20,3 +20,4 @@
 ./src/trx.cpp
 ./src/univ.cpp
 ./src/update.cpp
+./test.cpp

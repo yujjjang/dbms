@@ -12,39 +12,13 @@
 #include "trx.h"
 #include "types.h"
 #include "panic.h"
-
+#include "deadlock.h"
 class trx_t;
 
 
 typedef uint64_t trx_id_t;
 
 typedef enum {LOCK_S=0, LOCK_X} LockMode;
-
-/**
-class DeadLockManager {
-	typedef struct Vertex {
-		trx_id_t trx_id;
-		
-			// T1 :   R(A)     W(B)     =>   T1.edges = T2.trx_id ( R(A) & W(A))
-			// T2 :   R(B)			W(A)     =>   T2.edges = T1.trx_id ( R(B) & W(B))
-			
-		std::vector<trx_id_t> edges;
-	};
-
-	private:
-		std::unordered_set<Vertex> dl_graph;
-		
-		
-	public:
-		
-		DeadLockManager();
-		~DeadLockManager();
-
-		bool dl_check();
-		void putDepend
-
-};
-**/
 
 typedef struct lock_t {
 	lock_t(int table_id, trx_id_t trx_id, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i) :

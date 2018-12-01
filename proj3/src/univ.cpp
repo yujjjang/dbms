@@ -60,7 +60,7 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_pag
     }
     
     NodePage* page;
-    page = (NodePage*)get_page(table, FILEOFF_TO_PAGENUM(root_offset));
+    page = (NodePage*)get_page(table, FILEOFF_TO_PAGENUM(root_offset), buf_page_i);
 
     while (!page->is_leaf) {
         InternalPage* internal_node = (InternalPage*)page;
@@ -73,8 +73,8 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_pag
         
         NodePage* nextPage = (NodePage*)get_page(table, 
                 FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(internal_node, i)), buf_page_i);
-				// return nullptr 
-				// Means cannot acquire the latch on that page. [BUF_PAGE_MUTEX_ENTER_FAIL].
+				
+				// Return nullptr means cannot acquire the latch on that page. [BUF_PAGE_MUTEX_ENTER_FAIL].
 				if (!nextPage) {
 					release_page((Page*)page);
 					*buf_page_i = BUF_PAGE_MUTEX_FAIL;
@@ -131,14 +131,14 @@ char* find_record(Table* table, int64_t key, trx_t* trx) {
     LeafPage* leaf_node;
 	
 		// Find leaf returns false when there is no root node
-		// 														or the page latch is already granted by other.
+		// 				or the page latch is already granted by other.
 		while (!find_leaf(table, key, &leaf_node, &buf_page_i)) {
 			if (buf_page_i != BUF_PAGE_MUTEX_FAIL)
 				return NULL;
 		}
 		
-		// My transaction [ thread ] got the buf page mutex.
-		// Buffer frame index  = buf_page_i.
+		// Transaction get the buf_page_mutex.
+		// Buffer block index  = buf_page_i.
 
 		if (lock_sys->acquire_lock()) {
 			// OK
@@ -147,17 +147,16 @@ char* find_record(Table* table, int64_t key, trx_t* trx) {
 			return NULL;
 		}
 		
-
     for (i = 0; i < leaf_node->num_keys; i++) {
         if (LEAF_KEY(leaf_node, i) == key) {
             out_value = (char*)malloc(SIZE_VALUE * sizeof(char));
             memcpy(out_value, LEAF_VALUE(leaf_node, i), SIZE_VALUE);
-            release_page((Page*)leaf_node);
+            release_page((Page*)leaf_node, &buf_page_i);
             return out_value;
         }
     }
 
-    release_page((Page*)leaf_node);
+    release_page((Page*)leaf_node, &buf_page_i);
     return NULL;
 }
 

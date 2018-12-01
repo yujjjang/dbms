@@ -1,4 +1,4 @@
-cscope 15 $HOME/Documents/DBMS_2018_2/proj3 -q 0000000399 0000055438
+cscope 15 $HOME/Documents/DBMS_2018_2/dbms/proj3 -q 0000000408 0000056031
 	@include/bpt.h
 
 1 #i‚de‡
@@ -4629,7 +4629,39 @@ tŸ_pö˙t
 pö˙t
 --;
 
-299 
+300 
+	`ªÀa£_∑ge
+(
+Page
+* 
+∑ge
+, * 
+buf_∑ge_i
+) {
+
+301 
+poﬁ
+.
+tŸ_pö˙t
+--;
+
+302 
+∑ge
+->
+pö˙t
+--;
+
+303 
+poﬁ
+.
+buf_∑ge_muãx
+[*
+buf_∑ge_i
+].
+	`u∆ock
+();
+
+308 
 	`£t_dúty_∑ge
 (
 Page
@@ -4637,7 +4669,7 @@ Page
 ∑ge
 ) {
 
-300 
+309 
 ∑ge
 ->
 is_dúty
@@ -4645,7 +4677,7 @@ is_dúty
 åue
 ;
 
-305 
+314 
 	`‰ì_∑ge
 (
 TabÀ
@@ -4657,7 +4689,7 @@ Page
 ∑ge
 ) {
 
-306 
+315 
 FªePage
 * 
 ‰ì∑ge
@@ -4665,7 +4697,7 @@ FªePage
 ∑ge
 ;
 
-307 
+316 
 	`mem£t
 (
 ‰ì∑ge
@@ -4673,7 +4705,7 @@ FªePage
 PAGE_SIZE
 );
 
-308 
+317 
 ‰ì∑ge
 ->
 √xt
@@ -4685,13 +4717,13 @@ dbhódî
 ‰ìli°
 ;
 
-309 
+318 
 	`£t_dúty_∑ge
 (
 ∑ge
 );
 
-310 
+319 
 èbÀ
 ->
 dbhódî
@@ -4705,7 +4737,7 @@ dbhódî
 ∑gíum
 );
 
-311 
+320 
 	`£t_dúty_∑ge
 ((
 Page
@@ -4715,7 +4747,7 @@ Page
 dbhódî
 );
 
-316 
+325 
 	`Êush_èbÀ
 (
 TabÀ
@@ -4723,11 +4755,11 @@ TabÀ
 èbÀ
 ) {
 
-317 
+326 
 i
 ;
 
-318 
+327 
 i
  = 0; i < 
 poﬁ
@@ -4735,7 +4767,7 @@ poﬁ
 num_buf
 ; i++){
 
-319 i‡(
+328 i‡(
 poﬁ
 .
 ∑ges
@@ -4747,7 +4779,7 @@ i
 èbÀ
 ->table_id &&
 
-320 
+329 
 poﬁ
 .
 ∑ges
@@ -4757,7 +4789,7 @@ i
 is_dúty
 ){
 
-321 
+330 
 	`Êush_∑ge
 (&
 poﬁ
@@ -4767,13 +4799,13 @@ poﬁ
 i
 ]);
 
-328 
+337 
 	`öô_buf_poﬁ
 (
 num_buf
 ) {
 
-329 
+338 
 poﬁ
 .
 ∑ges
@@ -4785,7 +4817,7 @@ Page
 num_buf
 , (Page));
 
-331 
+339 
 poﬁ
 .
 buf_∑ge_muãx
@@ -4797,7 +4829,7 @@ muãx
 num_buf
 ];
 
-333 
+341 
 poﬁ
 .
 Ãu_hód
@@ -4805,7 +4837,7 @@ poﬁ
 NULL
 ;
 
-334 
+342 
 poﬁ
 .
 Ãu_èû
@@ -4813,23 +4845,23 @@ poﬁ
 NULL
 ;
 
-335 
+343 
 poﬁ
 .
 num_buf
  =Çum_buf;
 
-336 
+344 
 poﬁ
 .
 tŸ_pö˙t
  = 0;
 
-342 
+350 
 	`de°roy_buf_poﬁ
 () {
 
-343 
+351 
 	`‰ì
 (
 poﬁ
@@ -4837,13 +4869,13 @@ poﬁ
 ∑ges
 );
 
-344 
+352 
 dñëe
 [] 
 buf_∑ge_muãx
 ;
 
-345 
+354 
 poﬁ
 .
 ∑ges
@@ -4851,7 +4883,7 @@ poﬁ
 NULL
 ;
 
-346 
+355 
 poﬁ
 .
 Ãu_hód
@@ -4859,7 +4891,7 @@ poﬁ
 NULL
 ;
 
-347 
+356 
 poﬁ
 .
 Ãu_èû
@@ -4867,23 +4899,23 @@ poﬁ
 NULL
 ;
 
-348 
+357 
 poﬁ
 .
 num_buf
  = 0;
 
-349 
+358 
 poﬁ
 .
 tŸ_pö˙t
  = 0;
 
-355 
+364 
 	`¥öt_buf_poﬁ
 () {
 
-356 
+365 
 	`¥ötf
 ("tŸÖö˙à%d\n", 
 poﬁ
@@ -10327,7 +10359,9 @@ NodePage
 	`FILEOFF_TO_PAGENUM
 (
 roŸ_off£t
-));
+), 
+buf_∑ge_i
+);
 
 65 !
 ∑ge
@@ -10625,7 +10659,7 @@ lock_sys
 NULL
 ;
 
-151 
+150 
 i
  = 0; i < 
 Àaf_node
@@ -10633,7 +10667,7 @@ i
 num_keys
 ; i++) {
 
-152 i‡(
+151 i‡(
 	`LEAF_KEY
 (
 Àaf_node
@@ -10643,7 +10677,7 @@ i
 key
 ) {
 
-153 
+152 
 out_vÆue
  = (*)
 	`mÆloc
@@ -10651,7 +10685,7 @@ out_vÆue
 SIZE_VALUE
  * ());
 
-154 
+153 
 	`mem˝y
 (
 out_vÆue
@@ -10665,53 +10699,57 @@ i
 SIZE_VALUE
 );
 
-155 
+154 
 	`ªÀa£_∑ge
 ((
 Page
 *)
 Àaf_node
+, &
+buf_∑ge_i
 );
 
-156  
+155  
 out_vÆue
 ;
 
-160 
+159 
 	`ªÀa£_∑ge
 ((
 Page
 *)
 Àaf_node
+, &
+buf_∑ge_i
 );
 
-161  
+160  
 NULL
 ;
 
-162 
+161 
 	}
 }
 
-167 
+166 
 	$cut
 –
 Àngth
  ) {
 
-168 i‡(
+167 i‡(
 Àngth
  % 2 == 0)
 
-169  
+168  
 Àngth
 /2;
 
-171  
+170  
 Àngth
 /2 + 1;
 
-172 
+171 
 	}
 }
 
@@ -10739,13 +10777,17 @@ vÆue
 i
  = 0;
 
+6 
+buf_∑ge_i
+ = 0;
+
 7 
 LófPage
 * 
 Àaf_node
 ;
 
-8 i‡(!
+9 !
 	`föd_Àaf
 (
 èbÀ
@@ -10753,9 +10795,23 @@ LófPage
 key
 , &
 Àaf_node
+, &
+buf_∑ge_i
 )) {
 
-12 
+10 i‡(
+buf_∑ge_i
+ !
+BUF_PAGE_MUTEX_FAIL
+)
+
+14 i‡(
+lock_sys
+->
+acquúe_lock
+) {
+
+19 
 i
  = 0; i < 
 Àaf_node
@@ -10763,7 +10819,7 @@ i
 num_keys
 ; i++) {
 
-13 i‡(
+20 i‡(
 	`LEAF_KEY
 (
 Àaf_node
@@ -10773,7 +10829,7 @@ i
 key
 ) {
 
-14 
+21 
 	`mem˝y
 (
 	`LEAF_VALUE
@@ -10787,15 +10843,83 @@ vÆue
 SIZE_VALUE
 );
 
-15 
+22 
 	`ªÀa£_∑ge
 ((
 Page
 *)
 Àaf_node
+, &
+buf_∑ge_i
 );
 
-21 
+28 
+	}
+}
+
+	@test.cpp
+
+1 
+	~<muãx
+>
+
+2 
+	~<io°ªam
+>
+
+3 
+usög
+ 
+«me•a˚
+ 
+	g°d
+;
+
+5 
+	$maö
+(){
+
+6 
+muãx
+ 
+mut
+;
+
+7 
+unique_lock
+<
+muãx
+> 
+	`l_mut
+(
+mut
+);
+
+8 if(
+l_mut
+.
+	`owns_lock
+())
+
+9 
+cout
+ << "MY" << 
+ídl
+;
+
+11 
+cout
+ << "RR" << 
+ídl
+;
+
+14 
+l_mut
+.
+	`u∆ock
+();
+
+16 
 	}
 }
 
@@ -10803,8 +10927,8 @@ Page
 1
 .
 0
-22
-329
+23
+338
 include/bpt.h
 include/bpt_internal.h
 include/buf.h
@@ -10827,3 +10951,4 @@ src/table.cpp
 src/trx.cpp
 src/univ.cpp
 src/update.cpp
+test.cpp
