@@ -15,9 +15,7 @@
 #include "panic.h"
 #include "deadlock.h"
 
-class trx_t;
 extern TransactionManager trx_sys;
-
 
 typedef struct lock_t {
 	lock_t(int table_id, trx_id_t trx_id, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i, lock_t* wait_lock) :
@@ -35,6 +33,7 @@ typedef struct lock_t {
 	lock_t* next;
 
 	lock_t* wait_lock;
+
 } lock_t;
 	
 typedef struct lock_page_t {
@@ -46,7 +45,7 @@ class LockManager {
 	private:
 		DLChecker dl_checker;
 		std::mutex lock_sys_mutex;
-		std::condition_variable lock_sys_cv;
+		
 		// The hash table keyed on "page number (id) "
 		// Each bucket hash page-level locking structure.
 		// Lock_t has table_id.
@@ -55,12 +54,8 @@ class LockManager {
 	public:
 		
 		LockManager(){};
-		LockManager(int bucket_size) { this->lock_table.reserve(bucket_size); }
 		~LockManager(){};
 		
-		// Called in init_db.
-		void setBucketSize(int bucket_size) { this->lock_table.reserve(bucket_size); }
-
 		/**
 			* You should implement these functions below.
 			*/

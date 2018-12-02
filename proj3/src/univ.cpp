@@ -10,7 +10,6 @@ extern BufPool pool;
 extern LockManager lock_sys;
 
 bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node) {
-		// unique_lock<mutex> buf_latch(pool.buf_pool_mutex);
 		
     int i = 0;
     off_t root_offset = table->dbheader.root_offset;
@@ -56,6 +55,7 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node) {
 bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_page_i) {
 		// unique_lock<mutex> buf_latch(pool.buf_pool_mutex);
 		BUF_POOL_MUTEX_ENTER;
+
     int i = 0;
     off_t root_offset = table->dbheader.root_offset;
 
@@ -128,7 +128,8 @@ int64_t* find_record(Table* table, int64_t key) {
  */
 
 int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
-    int i = 0;
+		
+		int i = 0;
 		int buf_page_i = 0;
     int64_t* out_value;
 
@@ -138,11 +139,10 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 		// 				or the page latch is already granted by other.
 		while (!find_leaf(table, key, &leaf_node, &buf_page_i)) {
 			if (buf_page_i != BUF_PAGE_MUTEX_FAIL)
-				return NULL;
+				return nullptr;
 		}
+
 		
-		// Transaction get the buf_page_mutex.
-		// Buffer block index  = buf_page_i.
 		/*
 		if (lock_sys->acquire_lock()) {
 			// OK

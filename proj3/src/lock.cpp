@@ -30,14 +30,51 @@ bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int6
 	bool lock_req_by_cur_trx = false;
 	
 	int waiting_for_trx_id = -1;
+	
+	// If true push or skip.
+	bool lock_push = true;
+
 	/**
 		* Check whether there is the lock_t request by other trx in list or not.
 		* If it exists, get the conflicting trx's transaction id for dl_check.
-		*/
+		TODO*/
+	for (auto rit = lock_table[page_id].lock_list.rbegin(); rit != lock_table[page_id].lock_list.rend(); ++rit) {
+		// Only search the lock request which has same key & table_id in list.
+		if (rit -> key == key && rit -> table_id == table_id) {
+			prev_or_own_lock_ptr = &(*rit);
+			for (lock_t* local_rit = &(*rit); local_rit != nullptr;;) {
+				/**
+					* LOCK_X : 
+					*
+					*
+					*/
+				if (mode == LOCK_X) {
+					if (local_rit -> trx_id == trx -> getTransactionId()) {
+						
+						if (local_rit -> lock_mode == LOCK_X)
+							lock_push = false;
+
+					} else {
+						waiting_for_trx_id = local_rit -> trx_id;
+						wait_lock = (*local_rit);
+						only_for_cur_trx = false;
+						break;
+					}
+
+				} else {
+
+
+
+				}
+			}
+			break;
+		}
+	}
 
 	for (auto rit = lock_table[page_id].lock_list.rbegin(); rit != lock_table[page_id].lock_list.rend(); ++rit) {
 		
 		if (rit -> key == key && rit -> table_id == table_id) {
+			// Set the prev pointer.
 			if (!prev_or_own_lock_ptr)
 				prev_or_own_lock_ptr = &(*rit);
 			

@@ -75,7 +75,7 @@ int main(){
 	int* ptr = &li.back();
 	for (auto i : li)
 		cout << i << endl;
-
+	
 	*ptr = 3;
 
 	for (auto i : li)
@@ -97,6 +97,13 @@ int main(){
 	};
 
 	KKK(3,5);
+
+	bool ret = mut.try_lock();
+	if (ret)
+	{cout << "YESY" << endl; mut.unlock();}
+	else 
+		cout << "??" << endl;
+
 	return 0;
 }
 

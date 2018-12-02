@@ -193,8 +193,8 @@ void find_and_print(int table_id, int64_t key) {
     if (value_found == NULL) {
         printf("Record not found under key %" PRIu64 ".\n", key);
     }
-    else {
-        printf("key %" PRIu64 ", value [%s].\n", key, value_found);
+    else { // TODO : MAKE IT COMMNET.
+        //printf("key %" PRIu64 ", value [%s].\n", key, value_found);
         free(value_found);
     }
 }

@@ -26,7 +26,7 @@ int main( int argc, char ** argv ) {
     while (scanf("%c", &instruction) != EOF) {
         switch (instruction) {
         case 'i':
-            scanf("%" PRIu64 " %s", &input_key, input_value);
+            //scanf("%" PRIu64 " %s", &input_key, input_value);
             insert(table_id, input_key, input_value);
             print_tree(table_id);
             break;

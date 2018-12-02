@@ -3,8 +3,10 @@
 void DLChecker::initialize_tarjan_acyclic() {
 	while(!s_tarjan.empty())
 		s_tarjan.pop();
+	
 	dfs_order = -1;
 	cycle_flag = false;
+	
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		(it -> second).finished = false;
 		(it -> second).dfs_order = -1;
@@ -12,16 +14,20 @@ void DLChecker::initialize_tarjan_acyclic() {
 }
 
 void DLChecker::initialize_tarjan_cyclic() {
-	while(!s_tarjan.empty())
+	while (!s_tarjan.empty())
 		s_tarjan.pop();
+	
 	dfs_order = -1;
 	cycle_flag = false;
-	dl_graph.erase(latest_trx_id);
-	std::vector<int> erase_list;
 	
+	// Delete the latest Vertex <latest_trx_id, tarjan_t>, and the Vertex waiting for the latest one.
+	dl_graph.erase(latest_trx_id);
+	
+	std::vector<int> erase_list;
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		if ((it -> second).waiting_trx_id == latest_trx_id)
 			erase_list.push_back(it->first);
+		
 		else {
 			(it -> second).finished = false;
 			(it -> second).dfs_order = -1;
@@ -34,18 +40,23 @@ void DLChecker::initialize_tarjan_cyclic() {
 }
 
 int DLChecker::dfs_tarjan(tarjan_t* cur) {
-	cur->dfs_order = this->dfs_order++;
+	cur->dfs_order = ++this->dfs_order;
 	s_tarjan.push(cur);
 
 	int min_order = cur->dfs_order;
 	
-	tarjan_t* next = &(dl_graph[cur->waiting_trx_id]);
+	if (dl_graph.count(cur->waiting_trx_id) != 0){
+	
+		tarjan_t* next = &(dl_graph[cur->waiting_trx_id]);	
+		if (next->dfs_order == -1)
+			min_order = std::min(min_order, dfs_tarjan(next));
+		else if (!next->finished)
+			min_order = std::min(min_order, next->dfs_order);
+	}
 
-	if (next->dfs_order == -1)
-		min_order = std::min(min_order, dfs_tarjan(next));
-	else if (!next->finished)
-		min_order = std::min(min_order, next->dfs_order);
-
+	if (cycle_flag)
+		return INT_MAX;
+	
 	if (min_order == cur->dfs_order) {
 		tarjan_t* tmp = nullptr;
 		int cnt_size = 0;
@@ -64,8 +75,10 @@ int DLChecker::dfs_tarjan(tarjan_t* cur) {
 	return min_order;	
 }
 
+/**
+	* DeadLock detection algorithm using "tarjan's algorithm" which can be used to find SCC.
+	*/
 bool DLChecker::is_cyclic() {
-	// Tarjan's algorithm.
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		
 		if (it->second.dfs_order == -1)

@@ -1,3 +1,6 @@
+#ifndef __TYPES_H__
+#define __TYPES_H__
+
 #define NONE 					0
 #define RUNNING				1
 #define ABORTED				2
@@ -8,3 +11,5 @@
 typedef int trx_id_t;
 typedef int State;
 typedef int LockMode;
+
+#endif
