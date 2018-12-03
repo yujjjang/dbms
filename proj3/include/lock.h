@@ -17,6 +17,9 @@
 
 extern TransactionManager trx_sys;
 
+/**
+	* Lock request structure.
+	*/
 typedef struct lock_t {
 	lock_t(int table_id, trx_id_t trx_id, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i, lock_t* wait_lock) :
 		table_id(table_id), trx_id(trx_id), page_id(page_id), key(key), lock_mode(lock_mode), buf_page_i(buf_page_i), 
@@ -47,9 +50,7 @@ class LockManager {
 		DLChecker dl_checker;
 		std::mutex lock_sys_mutex;
 		
-		// The hash table keyed on "page number (id) "
-		// Each bucket hash page-level locking structure.
-		// Lock_t has table_id.
+		// The hash table keyed on "page number (id)"
 		std::unordered_map<pagenum_t, lock_page_t> lock_table;
 		
 		bool release_lock_aborted(trx_t*);
@@ -58,9 +59,6 @@ class LockManager {
 		LockManager(){};
 		~LockManager(){};
 		
-		/**
-			* You should implement these functions below.
-			*/
 		bool acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode, int buf_page_i);
 		void release_lock_low(trx_t*, lock_t*);
 		bool release_lock(trx_t*); 

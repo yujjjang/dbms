@@ -143,8 +143,9 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 
 		
 		if (!lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i)) {
+			if (trx->getState() != ABORTED)
+				PANIC("make transaction aborted in lock function.\n");
 			release_page((Page*)leaf_node, &buf_page_i);
-			trx->setState(ABORTED);
 			return nullptr;
 		} 
 			

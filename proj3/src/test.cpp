@@ -33,17 +33,20 @@ int main( int argc, char ** argv ) {
 			key_list.push_back(i);
 
 		for (auto i = 0; i < 10000; ++i) {
-			cout << "???? " <<endl;
 			int64_t* ret = find(table_id, key_list[i], trx_id, &result);
 			if (result != 1){
-				cout << "??" << endl;
+				cout << "GOD NO" << endl;
 				break;
 			}
-			cout << "!!!!" << endl;
+		}
 
-			for (auto i=0; i<SIZE_COLUMN; ++i)
-				cout << ret[i] << ' ';
-			cout << endl;
+		
+		for (auto i = 0; i < 10000; ++i) {
+			int ret = update(table_id, key_list[i], input_value, trx_id, &result);
+	
+			if (result != 1)
+				cout << "GOD NO " << endl;
+				break;
 		}
 		
 		end_tx(trx_id);

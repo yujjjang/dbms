@@ -5,6 +5,7 @@
 #include <vector>
 #include <stack>
 #include <algorithm>
+#include <climits>
 #include <panic.h>
 
 class DLChecker {

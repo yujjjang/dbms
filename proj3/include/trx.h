@@ -14,20 +14,19 @@ struct lock_t;
 
 class trx_t {
 	private:
-		// Unique transaction id.
 		int trx_id;
-		// List of locks : For release locks.
 		std::list<lock_t*> acquired_lock;	
+		
 		std::condition_variable trx_t_cv;
-		State state;
+		
+		State state; // NONE = 0, RUNNING = 1, ABORTED = 2
 	
 	public:
 		trx_t(trx_id_t t_id) : trx_id(t_id) , state(RUNNING) {};
-		~trx_t(){};
+		~trx_t(){ acquired_lock.clear(); }
 		
 		// Push or pop the trx's locks.
 		void push_acquired_lock(lock_t* lock) { acquired_lock.push_back(lock); }
-		void pop_all_acquired_lock() { acquired_lock.clear(); }			
 		void setState(State state) { this->state = state; }
 
 		const std::list<lock_t*> getAcquiredLock () const { return acquired_lock; }

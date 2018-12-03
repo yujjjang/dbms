@@ -99,6 +99,7 @@ bool DLChecker::is_cyclic() {
 	*/
 bool DLChecker::deadlock_checking(int trx_id, int wait_for) {
 	tarjan_t cur(wait_for);
+	
 	if (dl_graph.count(trx_id) != 0)
 		PANIC("In deadlock checking. The transaction cannot wait for more than one transaction.\n");
 	
@@ -110,6 +111,11 @@ bool DLChecker::deadlock_checking(int trx_id, int wait_for) {
 
 void DLChecker::delete_waiting_for_trx(int trx_id) {
 	std::vector<int> erase_list;
+
+	if (dl_graph.count(trx_id) == 0)
+		PANIC("In delete waiting for trx. Vertex[trx_id] doesn't exist.\n");
+
+	dl_graph.erase(trx_id);
 
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		if ((it -> second).waiting_trx_id == trx_id)

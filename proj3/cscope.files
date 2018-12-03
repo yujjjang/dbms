@@ -19,7 +19,7 @@
 ./src/lock.cpp
 ./src/main.cpp
 ./src/table.cpp
+./src/test.cpp
 ./src/trx.cpp
 ./src/univ.cpp
 ./src/update.cpp
-./test.cpp
