@@ -1,5 +1,9 @@
 #include "deadlock.h"
 
+/**
+	* initialize_tarjan_acyclic()
+	* Initialize all variables used in detection algorithm.
+	*/
 void DLChecker::initialize_tarjan_acyclic() {
 	while(!s_tarjan.empty())
 		s_tarjan.pop();
@@ -13,6 +17,11 @@ void DLChecker::initialize_tarjan_acyclic() {
 	}
 }
 
+/**
+	* initialize_tarjan_cyclic()
+	* Erase latest transaction in dl_graph and the vertex waiting for the latest one.
+ 	* Initialize all variables used in detection algorithm.
+	*/
 void DLChecker::initialize_tarjan_cyclic() {
 	while (!s_tarjan.empty())
 		s_tarjan.pop();
@@ -20,7 +29,6 @@ void DLChecker::initialize_tarjan_cyclic() {
 	dfs_order = -1;
 	cycle_flag = false;
 	
-	// Delete the latest Vertex <latest_trx_id, tarjan_t>, and the Vertex waiting for the latest one.
 	dl_graph.erase(latest_trx_id);
 	
 	std::vector<int> erase_list;
@@ -39,6 +47,11 @@ void DLChecker::initialize_tarjan_cyclic() {
 	
 }
 
+/**
+	* dfs_tarjan(tarjan_t*)
+	* tarjan_t*				: current Vertex
+	*	@return (int)		: the mininum order
+	*/
 int DLChecker::dfs_tarjan(tarjan_t* cur) {
 	cur->dfs_order = ++this->dfs_order;
 	s_tarjan.push(cur);
@@ -76,7 +89,9 @@ int DLChecker::dfs_tarjan(tarjan_t* cur) {
 }
 
 /**
-	* DeadLock detection algorithm using "tarjan's algorithm" which can be used to find SCC.
+	* is_cyclic()
+	* Main Function in DLChecker.
+	* DeadLock detection algorithm using "tarjan's" which is used to find SCC.
 	*/
 bool DLChecker::is_cyclic() {
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
@@ -95,20 +110,54 @@ bool DLChecker::is_cyclic() {
 }
 
 /**
-	* Main function in deadlock detection.
+	* deadlock_checking(trx_id, wait_for)
+	* trx_id				: current transaction's id
+	* wait_for			: the transaction's id which current transaction is waiting for.
+	*@return (bool) : cyclic or acyclic.
+	*
+	* This function is called when pushing lock request in list first time.
 	*/
 bool DLChecker::deadlock_checking(int trx_id, int wait_for) {
-	tarjan_t cur(wait_for);
 	
 	if (dl_graph.count(trx_id) != 0)
 		PANIC("In deadlock checking. The transaction cannot wait for more than one transaction.\n");
 	
-	dl_graph[trx_id] = cur;
+	tarjan_t cur(wait_for);
 	latest_trx_id = trx_id;
+	
+	dl_graph[trx_id] = cur;
 
 	return is_cyclic();
 }
 
+/**
+	* change_waiting_for(trx_id, wait_for)
+	* trx_id				: current transaction's id
+	* wait_for			: the transaction's id which current transaction is waiting for.
+	*@return (bool) : cyclic or acyclic.
+	*
+	* This function is called when the exclusive lock requests wake up.
+	*/
+bool DLChecker::change_waiting_for(int trx_id, int wait_for) {
+	
+	if (dl_graph.count(trx_id) == 0)
+		PANIC("In change_waiting_for. There is no waiting transaction by current one.\n");
+	
+	tarjan_t cur(wait_for);
+	latest_trx_id = trx_id;
+	
+	dl_graph[trx_id] = cur;
+
+	return is_cyclic();
+}
+
+/**
+	* delete_waiting_for_trx(trx_id)
+	* trx_id				: current transaction's id
+	*@return (void).
+	*
+	* This function is called when the transaction is committed.
+	*/
 void DLChecker::delete_waiting_for_trx(int trx_id) {
 	std::vector<int> erase_list;
 
@@ -124,15 +173,4 @@ void DLChecker::delete_waiting_for_trx(int trx_id) {
 
 	for (auto i : erase_list)
 		dl_graph.erase(i);
-}
-
-bool DLChecker::change_waiting_for(int trx_id, int wait_for) {
-	if (dl_graph.count(trx_id) == 0)
-		PANIC("In change_waiting_for. There is no wait for lock.\n");
-	tarjan_t cur(wait_for);
-	dl_graph[trx_id] = cur;
-
-	latest_trx_id = trx_id;
-
-	return is_cyclic();
 }

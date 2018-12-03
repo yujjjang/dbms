@@ -3,9 +3,6 @@
 
 #include "page.h"
 
-#include "trx.h"
-#include "lock.h"
-
 typedef struct _Table {
   HeaderPage dbheader;
   int dbfile;

@@ -8,6 +8,11 @@
 #include <climits>
 #include <panic.h>
 
+/**
+	* DLChecker : Deadlock detection class.
+	* dl_graph (directed graph) :  <trx_id , wait for>.
+	*/
+
 class DLChecker {
 	struct tarjan_t {
 		tarjan_t(){};
@@ -27,7 +32,6 @@ class DLChecker {
 		void initialize_tarjan_acyclic();
 		void initialize_tarjan_cyclic();
 		
-		// Cannot wait more than one transaction !.
 		std::unordered_map<int, tarjan_t>  dl_graph;
 		bool is_cyclic ();
 	

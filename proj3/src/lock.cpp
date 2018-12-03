@@ -122,8 +122,10 @@ bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int6
 	/**
 		*	Before push lock request in lock list, Check whether it causes deadlock or not.
 		* If deadlock is detected release current transaction's all lock request and change state RUNNING to ABORTED.
-		*/
+		* Should unlock page latch.
+	 	*/
 	if (dl_checker.deadlock_checking(trx->getTransactionId(), waiting_for_trx_id)) {
+		release_page_latch(buf_page_i);
 		release_lock_aborted(trx);
 		trx->setState(ABORTED);
 		return false;
@@ -145,9 +147,13 @@ bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int6
 		* Then change the conflict transaction and wait for that transaction. Otherwise, the current lock request is granted.
 		*	
 		*/
+
+	release_page_latch(buf_page_i);
+	
 	if (mode == LOCK_S) {
 		prev_trx = tm -> getTransaction(waiting_for_trx_id);
 		prev_trx -> getCV() -> wait(l_mutex);
+
 	} else {
 
 		prev_trx = tm -> getTransaction(waiting_for_trx_id);
@@ -185,6 +191,7 @@ bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int6
 		}
 	}
 
+	acquire_page_latch(buf_page_i);
 	lock_ptr -> acquired = true;
 	trx -> push_acquired_lock(lock_ptr);
 
@@ -268,4 +275,22 @@ bool LockManager::release_lock(trx_t* trx) {
 
 	trx->getCV()->notify_all();
 	return true;
+}
+
+/**
+	* buf pool latch & buffer page latch.
+	*/
+inline void LockManager::release_page_latch(int buf_page_i) {
+	pool.buf_page_mutex[buf_page_i].unlock();
+	pool.tot_pincnt--;
+	pool.pages[buf_page_i].pincnt--;
+}
+
+inline void LockManager::acquire_page_latch(int buf_page_i) {
+	while (1) {
+		BUF_POOL_MUTEX_ENTER;
+		BUF_PAGE_MUTEX_ENTER(buf_page_i);
+		if (ret)
+			break;
+	}
 }

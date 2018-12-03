@@ -7,7 +7,6 @@ static Table tables[MAX_NUM_TABLE];
 /**
 	*  alloc_table()
 	*  find the index to create new table.
-	*	 Make the LockManager and Transaction Manager in it.
 	**/
 int alloc_table() {
     for (int i = 0; i < MAX_NUM_TABLE; i++){

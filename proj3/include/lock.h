@@ -14,8 +14,10 @@
 #include "types.h"
 #include "panic.h"
 #include "deadlock.h"
+#include "buf.h"
 
 extern TransactionManager trx_sys;
+extern BufPool pool;
 
 /**
 	* Lock request structure.
@@ -54,9 +56,13 @@ class LockManager {
 		std::unordered_map<pagenum_t, lock_page_t> lock_table;
 		
 		bool release_lock_aborted(trx_t*);
+
+		inline void release_page_latch(int buf_page_i);
+		inline void acquire_page_latch(int buf_page_i);
+	
 	public:
 		
-		LockManager(){};
+		LockManager() : dl_checker() {};
 		~LockManager(){};
 		
 		bool acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode, int buf_page_i);
@@ -71,19 +77,18 @@ class LockManager {
 	lock_t lock_req{table_id, trx->getTransactionId(), page_id, key, mode, buf_page_i, wait_lock};\
 	lock_table[page_id].lock_list.push_back(lock_req);\
 	lock_ptr = &(lock_table[page_id].lock_list.back());\
-	if(prev_or_own_lock_ptr) {\
-		lock_ptr -> prev = prev_or_own_lock_ptr;\
-		prev_or_own_lock_ptr -> next = lock_ptr;\
+	if(prev_lock_ptr) {\
+		lock_ptr -> prev = prev_lock_ptr;\
+		prev_lock_ptr -> next = lock_ptr;\
 	}
 
 #define MAKE_LOCK_REQUEST_GRANTED \
 	lock_t lock_req{table_id, trx->getTransactionId(), page_id, key, mode, buf_page_i, nullptr};\
 	lock_table[page_id].lock_list.push_back(lock_req);\
 	lock_ptr = &(lock_table[page_id].lock_list.back());\
-	if(prev_or_own_lock_ptr) {\
-		lock_ptr -> prev = prev_or_own_lock_ptr;\
-		prev_or_own_lock_ptr -> next = lock_ptr;\
+	if(prev_lock_ptr) {\
+		lock_ptr -> prev = prev_lock_ptr;\
+		prev_lock_ptr -> next = lock_ptr;\
 	}
-
 
 #endif /* LOCK_HPP */
