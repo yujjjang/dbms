@@ -1,5 +1,4 @@
 #include "bpt_internal.h"
-
 /* Traces the path from the root to a leaf, searching
  * by key.  Displays information about the path
  * if the verbose flag is set.
@@ -143,14 +142,12 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 		}
 
 		
-		/*
-		if (lock_sys->acquire_lock()) {
-			// OK
-		} else {
-			// DEADLOCK -> ABORT !
-			return NULL;
-		}
-		*/
+		if (!lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i)) {
+			release_page((Page*)leaf_node, &buf_page_i);
+			trx->setState(ABORTED);
+			return nullptr;
+		} 
+			
     for (i = 0; i < leaf_node->num_keys; i++) {
         if (LEAF_KEY(leaf_node, i) == key) {
             out_value = (int64_t*)malloc(SIZE_COLUMN * sizeof(int64_t));
@@ -161,7 +158,7 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
     }
 
     release_page((Page*)leaf_node, &buf_page_i);
-    return NULL;
+    return nullptr;
 }
 
 /* Finds the appropriate place to

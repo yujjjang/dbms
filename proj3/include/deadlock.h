@@ -34,7 +34,7 @@ class DLChecker {
 		DLChecker(): dfs_order(-1), cycle_flag(false), latest_trx_id(0) {};
 		~DLChecker(){};
 		
-		bool change_waiting_list(int trx_id, int wait_for);
+		bool change_waiting_for(int trx_id, int wait_for);
 		bool deadlock_checking(int trx_id, int wait_for);
 		void delete_waiting_for_trx(int trx_id);
 };

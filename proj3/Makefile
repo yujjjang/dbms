@@ -12,6 +12,10 @@ TARGET_OBJ:=$(SRCDIR)main.o
 STATIC_LIB:=$(LIBS)libbpt.a
 DYNAMIC_LIB:=$(LIBS)libbpt.so
 
+# test source file
+TEST_SRC:=$(SRCDIR)test.cpp
+TEST_OBJ:=$(SRCDIR)test.o
+
 # Include more files if you write another source file.
 SRCS_FOR_LIB:= \
 	$(SRCDIR)univ.cpp \
@@ -32,6 +36,7 @@ OBJS_FOR_LIB:=$(SRCS_FOR_LIB:.cpp=.o)
 CXXFLAGS+= -g -std=c++14 -fPIC -I $(INC)
 
 TARGET=main
+TEST=test
 
 all: $(TARGET)
 
@@ -41,8 +46,11 @@ $(TARGET): $(TARGET_OBJ) $(STATIC_LIB)
 %.o:	%.cpp
 	$(CXX) $(CXXFLAGS) $^ -c -o $@
 
+test: $(TEST_OBJ) $(STATIC_LIB)
+	$(CXX) $(CXXFLAG) $< -o $@ -L $(LIBS) -lbpt
+
 clean:
-	rm -rf $(TARGET) $(TARGET_OBJ) $(OBJS_FOR_LIB) $(LIBS)*
+	rm -rf $(TEST) $(TEST_OBJ) $(TARGET) $(TARGET_OBJ) $(OBJS_FOR_LIB) $(LIBS)*
 
 $(DYNAMIC_LIB):	$(OBJS_FOR_LIB)
 	g++ -shared -Wl,-soname,libbpt.so -o $@ $(OBJS_FOR_LIB)

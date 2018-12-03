@@ -48,6 +48,7 @@ int destroy_buf_pool();
 void print_buf_pool();
 
 #define BUF_PAGE_MUTEX_FAIL -930209
+
 #define BUF_POOL_MUTEX_ENTER do {\
 	std::unique_lock<std::mutex> buf_pool_latch(pool.buf_pool_mutex);\
 } while(0);

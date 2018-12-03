@@ -119,8 +119,14 @@ void DLChecker::delete_waiting_for_trx(int trx_id) {
 	for (auto i : erase_list)
 		dl_graph.erase(i);
 }
-bool DLChecker::change_waiting_list(int trx_id, int wait_for) {
 
-	return true;
+bool DLChecker::change_waiting_for(int trx_id, int wait_for) {
+	if (dl_graph.count(trx_id) == 0)
+		PANIC("In change_waiting_for. There is no wait for lock.\n");
+	tarjan_t cur(wait_for);
+	dl_graph[trx_id] = cur;
 
+	latest_trx_id = trx_id;
+
+	return is_cyclic();
 }

@@ -101,18 +101,7 @@ extern int order_internal;
 extern int order_leaf;
 extern TransactionManager trx_sys;
 extern LockManager lock_sys;
-
-// Transaction's State
-#define NONE 		0
-#define RUNNING 1
-#define ABORTED 2
-// Lock Mode.
-#define LOCK_S 0
-#define LOCK_X 1
-
-typedef int trx_id_t;
-typedef int State;
-typedef int LockMode;
+extern BufPool pool;
 
 // FUNCTION PROTOTYPES.
 
@@ -126,7 +115,6 @@ int64_t *find_record(Table *table, int64_t key, trx_t* trx);
 int cut( int length );
 
 // Update.
-
 int update_record(Table* table, int64_t key, int64_t* value, trx_t* trx);
 
 // Insertion.

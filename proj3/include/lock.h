@@ -41,6 +41,7 @@ typedef struct lock_page_t {
 } lock_page_t;
 
 class LockManager {
+	typedef enum {LOCK_WAITING, LOCK_GRANTED_PUSH, LOCK_GRANTED_NO_PUSH} LOCK_REQ_STATE;
 	
 	private:
 		DLChecker dl_checker;
@@ -50,7 +51,8 @@ class LockManager {
 		// Each bucket hash page-level locking structure.
 		// Lock_t has table_id.
 		std::unordered_map<pagenum_t, lock_page_t> lock_table;
-
+		
+		bool release_lock_aborted(trx_t*);
 	public:
 		
 		LockManager(){};
@@ -65,6 +67,25 @@ class LockManager {
 };
 
 #define LOCK_SYS_MUTEX_ENTER \
-	std::unique_lock<std::mutex> l_mutex(lock_sys_mutex);\
+	std::unique_lock<std::mutex> l_mutex(lock_sys_mutex);
+
+#define MAKE_LOCK_REQUEST_WAIT \
+	lock_t lock_req{table_id, trx->getTransactionId(), page_id, key, mode, buf_page_i, wait_lock};\
+	lock_table[page_id].lock_list.push_back(lock_req);\
+	lock_ptr = &(lock_table[page_id].lock_list.back());\
+	if(prev_or_own_lock_ptr) {\
+		lock_ptr -> prev = prev_or_own_lock_ptr;\
+		prev_or_own_lock_ptr -> next = lock_ptr;\
+	}
+
+#define MAKE_LOCK_REQUEST_GRANTED \
+	lock_t lock_req{table_id, trx->getTransactionId(), page_id, key, mode, buf_page_i, nullptr};\
+	lock_table[page_id].lock_list.push_back(lock_req);\
+	lock_ptr = &(lock_table[page_id].lock_list.back());\
+	if(prev_or_own_lock_ptr) {\
+		lock_ptr -> prev = prev_or_own_lock_ptr;\
+		prev_or_own_lock_ptr -> next = lock_ptr;\
+	}
+
 
 #endif /* LOCK_HPP */

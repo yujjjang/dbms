@@ -52,10 +52,18 @@ int64_t* find(int table_id, int64_t key, int trx_id, int* result) {
 	
 	if (trx -> getState() == ABORTED) {
 		*result = 0;
-		return NULL;
+		return nullptr;
 	}
+	
+	int64_t* ret = find_record(table, key, trx);
+
+	if (trx -> getState() == ABORTED) {
+		*result = 0;
+		return nullptr;
+	}
+
 	*result = 1;
-	return find_record(table, key, trx);
+	return ret;
 }
 
 /* Update a record old value to new value.
@@ -70,8 +78,15 @@ int update(int table_id, int64_t key, int64_t* value, int trx_id, int* result) {
 		*result = 0;
 		return -1;
 	}
-	*result = 1;
-	return update_record(table, key, value, trx);
+
+	int ret = update_record(table, key, value, trx);
+	
+	if (trx -> getState() == ABORTED) {
+		*result = 0;
+		return -1;
+	}
+	
+	return ret;
 }
 
 /* Begin a new transaction.
@@ -81,7 +96,6 @@ int update(int table_id, int64_t key, int64_t* value, int trx_id, int* result) {
 int begin_tx() {
 	TransactionManager* tm = &trx_sys;
 	trx_t* new_t = tm -> makeNewTransaction();
-
 	return new_t -> getTransactionId();
 }
 

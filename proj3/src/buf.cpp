@@ -209,8 +209,9 @@ Page* get_page(Table* table, pagenum_t pagenum, int* buf_page_i) {
             flush_page(new_page);
         }
     }
-		BUF_PAGE_MUTEX_ENTER(i);
-    if (!ret)
+		BUF_PAGE_MUTEX_ENTER(new_page_i);
+    
+		if (!ret)
 			PANIC("Evicted page hold the latch\n");
 
 		file_read_page(table, pagenum, new_page);
