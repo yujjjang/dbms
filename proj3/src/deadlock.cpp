@@ -162,8 +162,8 @@ void DLChecker::delete_waiting_for_trx(int trx_id) {
 	std::vector<int> erase_list;
 
 	if (dl_graph.count(trx_id) == 0)
-		PANIC("In delete waiting for trx. Vertex[trx_id] doesn't exist.\n");
-
+		return;
+	
 	dl_graph.erase(trx_id);
 
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {

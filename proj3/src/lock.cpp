@@ -15,6 +15,8 @@ LockManager lock_sys;
 bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode, int buf_page_i) {
 
 	LOCK_SYS_MUTEX_ENTER;
+	if (!lock_sys_mutex_acquired)
+		return false;
 
 	Table* table = get_table(table_id);
 	TransactionManager* tm = &trx_sys;
@@ -125,8 +127,8 @@ bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int6
 		* Should unlock page latch.
 	 	*/
 	if (dl_checker.deadlock_checking(trx->getTransactionId(), waiting_for_trx_id)) {
-		release_page_latch(buf_page_i);
 		release_lock_aborted(trx);
+		release_page_latch(buf_page_i);
 		trx->setState(ABORTED);
 		return false;
 	}
@@ -155,6 +157,7 @@ bool LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int6
 		prev_trx -> getCV() -> wait(l_mutex);
 
 	} else {
+		PANIC(""); // TODO
 
 		prev_trx = tm -> getTransaction(waiting_for_trx_id);
 		prev_trx -> getCV() -> wait(l_mutex);
@@ -238,6 +241,75 @@ void LockManager::release_lock_low(trx_t* trx, lock_t* lock_ptr) {
 	return;
 }
 
+void LockManager::rollback_data(int table_id, uint64_t page_id, trx_t* trx, undo_log& log) {
+	
+	BUF_POOL_MUTEX_ENTER;
+	
+	Table* table = get_table(table_id);
+	
+	int buf_page_i = 0;
+	LeafPage* leaf_node = nullptr;
+	
+	while (true) {
+		leaf_node = (LeafPage*)get_page(table, page_id, &buf_page_i);
+		if (leaf_node)
+			break;
+	}
+
+	for (int i = 0; i < leaf_node->num_keys; i++) {
+		if (LEAF_KEY(leaf_node, i) == log.key) {
+			memcpy(LEAF_VALUE(leaf_node, i), log.undo_value, SIZE_VALUE);
+			release_page((Page*)leaf_node, &buf_page_i);
+			return;
+		}
+	}
+
+	PANIC("In rollback_data. Cannot find the given key.\n");
+}
+
+void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
+	int page_id = lock_ptr -> page_id;
+	/**
+		* If wait lock pointer is same as current lock_ptr, make it nullptr.
+		*/
+	for (auto it = lock_ptr -> next; it != nullptr;) {
+		if (it -> wait_lock == lock_ptr)
+			it -> wait_lock = nullptr;
+		it = it -> next;
+	}
+
+	if (lock_ptr -> prev)
+		lock_ptr -> prev -> next = lock_ptr -> next;
+	if (lock_ptr -> next)
+		lock_ptr -> next -> prev = lock_ptr -> prev;
+
+	bool flag = true;
+	
+	/** Erase current lock_t in lock list.
+		*/
+	
+	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
+		if (it -> trx_id == trx->getTransactionId() && it -> key == lock_ptr -> key && it -> acquired &&
+				it -> lock_mode == lock_ptr -> lock_mode && it -> table_id == lock_ptr -> table_id){
+			
+			if (lock_ptr -> lock_mode == LOCK_X) { //TODO : ROLLBACK DATA.
+				undo_log log = trx->pop_undo_log();
+				rollback_data(it->table_id, page_id, trx, log);
+			}
+
+			
+			lock_table[page_id].lock_list.erase(it);
+			flag = false;
+			break;
+		}
+	}
+
+	if (flag)
+		PANIC("In release_lock_low. Cannot erase lock_t in list).\n");
+	return;
+}
+
+
 /**
 	* This function is called in the deadlock.
 	* releases_lock_aborted(trx_t*)
@@ -248,7 +320,7 @@ bool LockManager::release_lock_aborted(trx_t* trx) {
 	
 	const std::list<lock_t*> acquired_lock = trx->getAcquiredLock();
 	for (auto it = acquired_lock.begin(); it != acquired_lock.end(); ++it) {
-		release_lock_low(trx, *it);
+		release_lock_aborted_low(trx, *it);
 	}
 	
 	trx->getCV()->notify_all();
@@ -263,7 +335,9 @@ bool LockManager::release_lock_aborted(trx_t* trx) {
 	*/
 bool LockManager::release_lock(trx_t* trx) {
 	LOCK_SYS_MUTEX_ENTER;
-	
+	if (!lock_sys_mutex_acquired)
+		return false;
+
 	/** Delete the current transaction's Vertex and the Vertex whose edge is current transaction in dl_graph.
 		*/
 	dl_checker.delete_waiting_for_trx(trx->getTransactionId());

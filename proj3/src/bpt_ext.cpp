@@ -115,7 +115,13 @@ int end_tx(int trx_id) {
 		ret = tm->deleteTransaction(trx_id);
 	} else {
 		end_t -> setState(NONE);
-		ret = lm->release_lock(end_t) && tm -> deleteTransaction(trx_id);
+
+		while (true) {
+			if (lm->release_lock(end_t))
+				break;
+		}
+
+		ret = tm -> deleteTransaction(trx_id);
 	}
 	if (!ret)
 		PANIC("end_tx.\n");

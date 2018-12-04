@@ -134,21 +134,45 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 
     LeafPage* leaf_node;
 	
-		// Find leaf returns false when there is no root node
+		/*// Find leaf returns false when there is no root node
 		// 				or the page latch is already granted by other.
 		while (!find_leaf(table, key, &leaf_node, &buf_page_i)) {
 			if (buf_page_i != BUF_PAGE_MUTEX_FAIL)
 				return nullptr;
 		}
+		*/
+		bool get_page_latch;
+		bool lock_req_ret;		
+		while(true) {
+			
+			get_page_latch = find_leaf(table, key, &leaf_node, &buf_page_i);
+			
+			if (!get_page_latch) {
+				if (buf_page_i != BUF_PAGE_MUTEX_FAIL)
+					return nullptr;
+			} else {
+				lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i);
+				if (!lock_req_ret) {
+					if (trx -> getState() == ABORTED) {
+						release_page((Page*)leaf_node, &buf_page_i);
+						return nullptr;
+					} else {
+						release_page((Page*)leaf_node, &buf_page_i);
+					}
+				} else {
+					break;
+				}
+			}
+		}
 
-		
+		/*
 		if (!lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i)) {
 			if (trx->getState() != ABORTED)
 				PANIC("make transaction aborted in lock function.\n");
 			release_page((Page*)leaf_node, &buf_page_i);
 			return nullptr;
 		} 
-			
+		*/
     for (i = 0; i < leaf_node->num_keys; i++) {
         if (LEAF_KEY(leaf_node, i) == key) {
             out_value = (int64_t*)malloc(SIZE_COLUMN * sizeof(int64_t));

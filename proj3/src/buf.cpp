@@ -171,7 +171,7 @@ Page* get_page(Table* table, pagenum_t pagenum) {
 Page* get_page(Table* table, pagenum_t pagenum, int* buf_page_i) {
     Page* new_page = NULL;
     int i;
-		int new_page_i = 0;
+		int new_page_i;
     for (i = 0; i < pool.num_buf; i++){
         if (!new_page && pool.pages[i].table_id == 0){
             new_page = &pool.pages[i];
@@ -209,6 +209,7 @@ Page* get_page(Table* table, pagenum_t pagenum, int* buf_page_i) {
             flush_page(new_page);
         }
     }
+
 		BUF_PAGE_MUTEX_ENTER(new_page_i);
     
 		if (!ret)

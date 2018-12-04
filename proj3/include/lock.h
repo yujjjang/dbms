@@ -55,11 +55,14 @@ class LockManager {
 		// The hash table keyed on "page number (id)"
 		std::unordered_map<pagenum_t, lock_page_t> lock_table;
 		
+		void rollback_data(int, uint64_t, trx_t*, undo_log&);
+		void release_lock_aborted_low(trx_t*, lock_t*);
 		bool release_lock_aborted(trx_t*);
 
 		inline void release_page_latch(int buf_page_i);
 		inline void acquire_page_latch(int buf_page_i);
-	
+
+
 	public:
 		
 		LockManager() : dl_checker() {};
@@ -71,7 +74,8 @@ class LockManager {
 };
 
 #define LOCK_SYS_MUTEX_ENTER \
-	std::unique_lock<std::mutex> l_mutex(lock_sys_mutex);
+	std::unique_lock<std::mutex> l_mutex(lock_sys_mutex, std::defer_lock);\
+	bool lock_sys_mutex_acquired = l_mutex.try_lock();
 
 #define MAKE_LOCK_REQUEST_WAIT \
 	lock_t lock_req{table_id, trx->getTransactionId(), page_id, key, mode, buf_page_i, wait_lock};\

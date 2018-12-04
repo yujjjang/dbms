@@ -12,19 +12,33 @@
 class LockManager;
 struct lock_t;
 
+struct undo_log {
+	undo_log(int64_t key, int64_t* old_value) : key(key) {
+		memcpy(undo_value, old_value, 120);
+	}
+	int64_t key;
+	int64_t undo_value[15];
+};
+
 class trx_t {
+
 	private:
 		int trx_id;
 		std::list<lock_t*> acquired_lock;	
-		
 		std::condition_variable trx_t_cv;
-		
+
+		std::list<undo_log> undo_log_list;
+
 		State state; // NONE = 0, RUNNING = 1, ABORTED = 2
 	
 	public:
 		trx_t(trx_id_t t_id) : trx_id(t_id) , state(RUNNING) {};
-		~trx_t(){ acquired_lock.clear(); }
-		
+		~trx_t(){ acquired_lock.clear(); undo_log_list.clear(); }
+
+		// For rollback.
+		void push_undo_log(int64_t key, int64_t* old_value) { undo_log log(key, old_value); undo_log_list.push_back(log); }
+		undo_log pop_undo_log() { undo_log log = undo_log_list.front(); undo_log_list.pop_front(); return log; }
+
 		// Push or pop the trx's locks.
 		void push_acquired_lock(lock_t* lock) { acquired_lock.push_back(lock); }
 		void setState(State state) { this->state = state; }
@@ -37,14 +51,14 @@ class trx_t {
 
 
 class TransactionManager {
-	
+
 	private:
 		std::unordered_map<trx_id_t, trx_t*> active_trx;
 		std::atomic<int> trx_id;
-	
+
 	public:
 		TransactionManager():trx_id(0) {};	
-		
+
 		~TransactionManager();
 
 		trx_t* makeNewTransaction();
