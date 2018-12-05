@@ -8,8 +8,13 @@
 #define LOCK_S				0
 #define LOCK_X				1
 
+#define LOCK_SUCCESS  0
+#define LOCK_WAIT     1
+#define DEADLOCK      2
+
 typedef int trx_id_t;
 typedef int State;
 typedef int LockMode;
+
 
 #endif

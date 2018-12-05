@@ -25,12 +25,16 @@ class trx_t {
 	private:
 		int trx_id;
 		std::list<lock_t*> acquired_lock;	
+		
+		std::mutex trx_mutex;
 		std::condition_variable trx_t_cv;
 
 		std::list<undo_log> undo_log_list;
 
 		State state; // NONE = 0, RUNNING = 1, ABORTED = 2
-	
+		
+		lock_t* wait_lock;
+
 	public:
 		trx_t(trx_id_t t_id) : trx_id(t_id) , state(RUNNING) {};
 		~trx_t(){ acquired_lock.clear(); undo_log_list.clear(); }
@@ -43,10 +47,15 @@ class trx_t {
 		void push_acquired_lock(lock_t* lock) { acquired_lock.push_back(lock); }
 		void setState(State state) { this->state = state; }
 
+		void trx_mutex_enter();
+		void trx_mutex_exit();
+		void wait_for_lock();
+		void set_wait_lock(lock_t* wait_lock) { this->wait_lock = wait_lock; }
+		lock_t* get_wait_lock() { return wait_lock; }
+
 		const std::list<lock_t*> getAcquiredLock () const { return acquired_lock; }
 		const State getState() const { return state; }
 		const trx_id_t getTransactionId () const { return trx_id; }
-		std::condition_variable* getCV() { return &trx_t_cv; }
 };
 
 

@@ -26,12 +26,21 @@ void shared_lock(int table_id, int key, int trx_id, int* result) {
 
 void exclusive_lock(int table_id, int key, int64_t* input_value, int trx_id, int* result) {
 	int ret = update(table_id, key, input_value, trx_id, result);
-	cout << trx_id <<"SX DONE" << endl;
 }
 
 void end_trx(int trx_id){
 	end_tx(trx_id);
 }
+
+void first_schedule_RRW(int table_id){
+}
+void second_schedule_RWR(int table_id){
+}
+void third_schedule_WRR(int table_id){
+}
+void fourth_schdule_WRR(int table_id){
+}
+
 
 int main( int argc, char ** argv ) {
     int64_t input_key;
@@ -52,7 +61,6 @@ int main( int argc, char ** argv ) {
 		int s_result = 0;
 		
     table_id = open_table("test1_10.db", 15);
-
 
 		thread first_s(shared_lock, table_id, 1, f_trx_id, &f_result);
 		//first_s.join();

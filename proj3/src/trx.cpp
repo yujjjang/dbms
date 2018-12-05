@@ -41,3 +41,16 @@ bool TransactionManager::deleteTransaction(trx_id_t trx_id) {
 
 	return false;
 }
+
+void TransactionManager::trx_mutex_enter() {
+	trx_mutex.lock();
+}
+
+void TransactionManager::trx_mutex_exit() {
+	trx_mutex.unlock();
+}
+
+void TransactionManager::wait_for_lock() {
+	trx_t_cv.wait(trx_mutex);
+	trx_mutex.unlock();
+}
