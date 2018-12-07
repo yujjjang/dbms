@@ -55,7 +55,5 @@ void print_buf_pool();
 #define BUF_PAGE_MUTEX_ENTER(i)\
 	bool ret = pool.buf_page_mutex[i].try_lock();
 
-#define BUF_PAGE_MUTEX_ENTER_WAIT(i)\
-	pool.buf_page_mutex[i].lock();
 
 #endif /* __BUF_H__ */

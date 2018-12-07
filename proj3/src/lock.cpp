@@ -3,20 +3,20 @@
 LockManager lock_sys;
 
 /**
-	* lock_rec_has_lock(trx_t*, table_id, page_id, key, mode, buf_page_i, front_lock_ptr)
+	* lock_rec_has_lock(trx_t*, table_id, page_id, key, mode, front_lock_ptr)
 	*
  	* @return (bool) : If enough lock request is already granted return true. Other wise return false
 	*/
 
 bool LockManager::lock_rec_has_lock(trx_t* trx, int table_id, pagenum_t page_id, 
-		int64_t key, LockMode mode, int buf_page_i, lock_t** front_lock_ptr) {
+		int64_t key, LockMode mode, lock_t** front_lock_ptr) {
 		
 	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
 		
 		if (it -> key == key && it -> table_id == table_id) {
 			*front_lock_ptr = &(*it);
 			for (lock_t* lock = *front_lock_ptr; (lock && lock -> acquired);) {
-				if (lock -> trx -> getTransactionId() == trx -> getTransactionId() &&  lock -> lock_mode >= mode) {
+				if (lock -> trx -> getTransactionId() == trx -> getTransactionId() &&  lock_mode_stronger_or_eq(lock -> lock_mode, mode)) {
 						return true;
 				}
 				lock = lock -> next;
@@ -28,13 +28,13 @@ bool LockManager::lock_rec_has_lock(trx_t* trx, int table_id, pagenum_t page_id,
 }
 
 /**
-	* lock_rec_create(trx_t*, table_id, page_id, key, mode, buf_page_i, tail_lock_ptr)
+	* lock_rec_create(trx_t*, table_id, page_id, key, mode, tail_lock_ptr)
 	*
   * @return (lock_t*) : return current lock request pointer.
 	*/
 lock_t* LockManager::lock_rec_create(trx_t* trx, int table_id, pagenum_t page_id, 
-		int64_t key, LockMode mode, int buf_page_i, lock_t* tail_lock_ptr) {
-	lock_t lock_req(table_id, trx, page_id, key, mode, buf_page_i);
+		int64_t key, LockMode mode, lock_t* tail_lock_ptr) {
+	lock_t lock_req(table_id, trx, page_id, key, mode);
 	lock_table[page_id].lock_list.push_back(lock_req);
 	lock_t* lock_ptr = &(lock_table[page_id].lock_list.back());
 
@@ -46,16 +46,16 @@ lock_t* LockManager::lock_rec_create(trx_t* trx, int table_id, pagenum_t page_id
 }
 
 /**
-	* lock_wait_rec_add_to_queue(trx_t*, table_id, page_id, key, mode, buf_page_i, front_lock_ptr, wait_lock)
+	* lock_wait_rec_add_to_queue(trx_t*, table_id, page_id, key, mode, front_lock_ptr, wait_lock)
 	*
 	* @return (void).
 	*
 	* Make new waiting lock request and push in list.
 	*/
-void LockManager::lock_wait_rec_add_to_queue(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode, int buf_page_i,
+void LockManager::lock_wait_rec_add_to_queue(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode,
 		lock_t* front_lock_ptr, lock_t* wait_lock) {
 
-	TRX_MUTEX_ENTER;
+	trx->trx_mutex_enter();
 
 	lock_t* tail_lock_ptr = nullptr;
 	for (lock_t* lock = front_lock_ptr; lock != nullptr;){
@@ -63,37 +63,37 @@ void LockManager::lock_wait_rec_add_to_queue(trx_t* trx, int table_id, pagenum_t
 		lock = lock -> next;
 	}
 
-	lock_t* lock_ptr = lock_rec_create(trx, table_id, page_id, key, mode, buf_page_i, tail_lock_ptr);
+	lock_t* lock_ptr = lock_rec_create(trx, table_id, page_id, key, mode, tail_lock_ptr);
 	lock_ptr -> acquired = false;
 	trx -> set_wait_lock(wait_lock);
 }
 
 /**
-	* lock_granted_rec_add_to_queue(trx_t*, table_id, page_id, key, mode, buf_page_i, front_lock_ptr)
+	* lock_granted_rec_add_to_queue(trx_t*, table_id, page_id, key, mode, front_lock_ptr)
 	*
 	*@return (void).
 	*
 	* Make new granted lock request and push in list. 
 	*/
 void LockManager::lock_granted_rec_add_to_queue(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, 
-		LockMode mode, int buf_page_i, lock_t* front_lock_ptr) {
+		LockMode mode, lock_t* front_lock_ptr) {
 
 	lock_t* tail_lock_ptr = nullptr;
 	for (lock_t* lock = front_lock_ptr; lock != nullptr;) {
 		tail_lock_ptr = lock;
 	}
 
-	lock_t* lock_ptr = lock_rec_create(trx, table_id, page_id, key, mode, buf_page_i, tail_lock_ptr);
+	lock_t* lock_ptr = lock_rec_create(trx, table_id, page_id, key, mode, tail_lock_ptr);
 	lock_ptr -> acquired = true;
 	trx -> push_acquired_lock(lock_ptr);
 }
 
 /**
-	* lock_rec_has_conflict(trx_t*, table_id, page_id, key, mode, buf_page_i, front_lock_ptr, wait_lock)
+	* lock_rec_has_conflict(trx_t*, table_id, page_id, key, mode, front_lock_ptr, wait_lock)
 	* 
 	*@return (bool) : If there is conflict, set wait lock and return true. Otherwise return false.
 	*/
-bool LockManager::lock_rec_has_conflict(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode, int buf_page_i,
+bool LockManager::lock_rec_has_conflict(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode,
 		lock_t* front_lock_ptr, lock_t** wait_lock) {
 	
 	if (!front_lock_ptr)
@@ -101,7 +101,7 @@ bool LockManager::lock_rec_has_conflict(trx_t* trx, int table_id, pagenum_t page
 	
 	for (lock_t* lock = front_lock_ptr; lock != nullptr;) {
 		if (lock -> trx -> getTransactionId() != trx -> getTransactionId() &&
-				!lock_compatibility_matrix[lock -> lock_mode][mode]) {
+				!lock_mode_compatible(lock -> lock_mode, mode)) {
 			*wait_lock = lock;
 		}
 		lock = lock -> next;
@@ -124,7 +124,7 @@ std::vector<int> LockManager::lock_wait_for(trx_t* trx, lock_t* front_lock_ptr, 
 	
 	for (lock_t* lock = front_lock_ptr; lock != wait_lock;) {
 		if (lock -> trx -> getTransactionId() != trx -> getTransactionId() &&
-				!lock_compatibility_matrix[lock -> lock_mode][mode])
+				!lock_mode_compatible(lock -> lock_mode, mode))
 			wait_for.push_back(lock -> trx -> getTransactionId());
 		lock = lock -> next;
 	}
@@ -134,16 +134,15 @@ std::vector<int> LockManager::lock_wait_for(trx_t* trx, lock_t* front_lock_ptr, 
 }
 
 /**
- *	acquire_lock(trx_t*, table_id, page_id, key, lock mode, buf_page_i)
+ *	acquire_lock(trx_t*, table_id, page_id, key, lock mode)
  *	trx_t* 				: current transaction
  *  table_id 			: table number
  *  page_id 			: page number of record
  *  key						: key on record
  *  mode 					: LOCK_S or LOCK_X (find : LOCK_S , update : LOCK_X)
- *  buf_page_i		: buffer page index for buffer page latch
  *	@return (int) : LOCK_SUCCESS. LOCK_WAITING, DEADLOCK.
  */
-int LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode, int buf_page_i) {
+int LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode) {
 
 	LOCK_SYS_MUTEX_ENTER;
 
@@ -160,15 +159,15 @@ int LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int64
 	/**
 		* If the lock request (equal or powerful) is already granted, return LOCK_SUCCESS immediately.
 		*/
-	if (lock_rec_has_lock(trx, table_id, page_id, key, mode, buf_page_i, &front_lock_ptr))
+	if (lock_rec_has_lock(trx, table_id, page_id, key, mode, &front_lock_ptr))
 		return LOCK_SUCCESS;
 	
 	/**
 		* If the lock has no conflict with other lock requests, push lock request in list.
 		* Then return LOCK_SUCCESS.
 		*/
-	else if (!lock_rec_has_conflict(trx, table_id, page_id, key, mode, buf_page_i, front_lock_ptr, &wait_lock)){
-		lock_granted_rec_add_to_queue(trx, table_id, page_id, key, mode, buf_page_i, front_lock_ptr);
+	else if (!lock_rec_has_conflict(trx, table_id, page_id, key, mode, front_lock_ptr, &wait_lock)){
+		lock_granted_rec_add_to_queue(trx, table_id, page_id, key, mode, front_lock_ptr);
 		return LOCK_SUCCESS;
 	
 	} else {
@@ -183,15 +182,38 @@ int LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int64
 			return DEADLOCK;
 		}
 
-		lock_wait_rec_add_to_queue(trx, table_id, page_id, key, mode, buf_page_i, front_lock_ptr, wait_lock);
+		lock_wait_rec_add_to_queue(trx, table_id, page_id, key, mode, front_lock_ptr, wait_lock);
 		return LOCK_WAIT;
 	}
 
 	PANIC("In acquire lock. Unknown event.\n");
 }
 
-bool LockManager::lock_mode_compatible(LockMode lock_mode1, LockMode lock_mode2) {
+/**
+	* lock_mode_compatible(lock1, lock2)      ----------------------     
+  * (row , col) = (lock1 , lock2)           |  LOCK_S  | LOCK_X  |
+  *															   ---------|----------|---------|
+	*																 | LOCK_S |   True   |  False  |
+	* 															 |--------|----------|---------|
+	*																 | LOCK_X |   False  |  False  |
+	*                                |--------|----------|---------|
+	*/
+const bool LockManager::lock_mode_compatible(LockMode lock_mode1, LockMode lock_mode2) {
 	return (lock_compatibility_matrix[lock_mode1][lock_mode2]);
+}
+
+/**
+	* lock_mode_stronger_or_eq(lock1, lock2)  ----------------------     
+  * (row , col) = (lock1 , lock2)           |  LOCK_S  | LOCK_X  |
+  *															   ---------|----------|---------|
+	*																 | LOCK_S |   True   |  False  |
+	* 															 |--------|----------|---------|
+	*																 | LOCK_X |   True   |  True   |
+	*                                |--------|----------|---------|
+	*/
+
+const bool LockManager::lock_mode_stronger_or_eq(LockMode lock_mode1, LockMode lock_mode2) {
+	return (lock_strength_matrix[lock_mode1][lock_mode2]);
 }
 
 /**
@@ -212,7 +234,7 @@ void LockManager::lock_grant(lock_t* lock_ptr) {
 /**
 	* still_lock_wait(lock_t*)
 	*
-	*@return (bool) : If still wait return true.
+	*@return (bool) : If the lock request's transaction can be granted, return true. Otherwise return false.
 	*/
 bool LockManager::still_lock_wait(lock_t* lock) {
 	int wait_for_trx_id = dl_checker.get_wait_lock_trx_id(lock -> trx -> getTransactionId());
@@ -250,10 +272,12 @@ void LockManager::rollback_data(trx_t* trx) {
 	std::list<undo_log> undo_log_list = trx -> get_undo_log_list();
 
 	bool flag;
+	
 	for (auto rit = undo_log_list.rbegin(); rit != undo_log_list.rend(); ++rit) {
 		flag = false;
 		leaf_node = nullptr;
 		table = get_table(rit -> table_id);
+
 		leaf_node = (LeafPage*)get_page(table, rit -> page_id);
 
 		for (int i = 0; i < leaf_node -> num_keys; i++) {
@@ -264,6 +288,7 @@ void LockManager::rollback_data(trx_t* trx) {
 				break;
 			}
 		}	
+		
 		if (!flag)
 			PANIC("In rollback_data. Cannot find the given key.\n");
 	}
@@ -286,7 +311,6 @@ void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
 		lock_ptr -> next -> prev = lock_ptr -> prev;
 
 	for (lock_t* lock = lock_ptr -> next; lock != nullptr;) {
-		// Waiting for lock_ptr.
 		if (lock -> trx -> get_wait_lock() == lock_ptr && !still_lock_wait(lock)) {
 			lock_grant(lock);
 		}
@@ -294,8 +318,8 @@ void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
 	}
 
 	bool flag = true;
+	
 	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
-		
 		if (&(*it) == lock_ptr) {
 			lock_table[page_id].lock_list.erase(it);
 			flag = false;
@@ -344,6 +368,7 @@ void LockManager::release_lock_low(trx_t* trx, lock_t* lock_ptr) {
 	}
 
 	bool flag = true;
+	
 	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
 		if (&(*it) == lock_ptr) {	
 			lock_table[page_id].lock_list.erase(it);
@@ -351,6 +376,7 @@ void LockManager::release_lock_low(trx_t* trx, lock_t* lock_ptr) {
 			break;
 		}
 	}
+	
 	if (flag)
 		PANIC("In release_lock_low. Cannot erase lock_t in list).\n");
 	return;

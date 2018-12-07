@@ -138,6 +138,10 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 
 	while (true) {
 
+		/**
+			* First acquire the buf pool latch. Then attempt to acquire page latch.
+			* If fail to acquire, restart acquiring the buf pool latch.
+			*/
 		get_page_latch = find_leaf(table, key, &leaf_node, &buf_page_i);
 		
 		if (!get_page_latch) {
@@ -147,7 +151,7 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 				continue;
 		}
 	  
-		lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i);
+		lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S);
 		
 		if (lock_req_ret == LOCK_SUCCESS) {
 			break;

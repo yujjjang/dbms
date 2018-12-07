@@ -12,7 +12,6 @@
 	* DLChecker : Deadlock detection class.
 	* dl_graph (directed graph) :  <trx_id , wait for>.
 	*/
-
 class DLChecker {
 	struct tarjan_t {
 		tarjan_t(){};
@@ -46,4 +45,5 @@ class DLChecker {
 };
 
 #define NO_WAIT_LOCK -930209
+
 #endif

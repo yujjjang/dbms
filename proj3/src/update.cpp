@@ -4,7 +4,6 @@
 /**
 	* update_record(Table*, key, value, trx_t*)
 	*@return (int)  : If suceess return 0, else return non-zero value.
-	*
 	*/
 int update_record(Table* table, int64_t key, int64_t* value, trx_t* trx) {
 	int i = 0;
@@ -33,7 +32,7 @@ int update_record(Table* table, int64_t key, int64_t* value, trx_t* trx) {
 		/**
 			* If the page latch is granted, acquire the record lock by S2PL.
 			*/
-		lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_X, buf_page_i);
+		lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_X);
 
 		if (lock_req_ret == LOCK_SUCCESS) {
 			break;
