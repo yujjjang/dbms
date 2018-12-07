@@ -9,13 +9,17 @@
 #include <condition_variable>
 #include "types.h"
 
+#include <unistd.h>
+
 class LockManager;
 struct lock_t;
 
 struct undo_log {
-	undo_log(int64_t key, int64_t* old_value) : key(key) {
+	undo_log(int table_id, uint64_t page_id, int64_t key, int64_t* old_value) : table_id(table_id), page_id(page_id), key(key) {
 		memcpy(undo_value, old_value, 120);
 	}
+	int table_id;
+	uint64_t page_id;
 	int64_t key;
 	int64_t undo_value[15];
 };
@@ -27,12 +31,12 @@ class trx_t {
 		std::list<lock_t*> acquired_lock;	
 		
 		std::mutex trx_mutex;
-		std::condition_variable trx_t_cv;
+		std::condition_variable_any trx_t_cv;
 
 		std::list<undo_log> undo_log_list;
 
 		State state; // NONE = 0, RUNNING = 1, ABORTED = 2
-		
+		LockState lock_state; // SUCCESS = 0, WAIT = 1, DEADLOCK = 2.	
 		lock_t* wait_lock;
 
 	public:
@@ -40,22 +44,32 @@ class trx_t {
 		~trx_t(){ acquired_lock.clear(); undo_log_list.clear(); }
 
 		// For rollback.
-		void push_undo_log(int64_t key, int64_t* old_value) { undo_log log(key, old_value); undo_log_list.push_back(log); }
-		undo_log pop_undo_log() { undo_log log = undo_log_list.front(); undo_log_list.pop_front(); return log; }
+		void push_undo_log(int table_id, uint64_t page_id, int64_t key, int64_t* old_value) { 
+			undo_log log(table_id, page_id, key, old_value); undo_log_list.push_back(log); }
+		undo_log pop_undo_log() { undo_log log = undo_log_list.back(); undo_log_list.pop_back(); return log; }
 
 		// Push or pop the trx's locks.
 		void push_acquired_lock(lock_t* lock) { acquired_lock.push_back(lock); }
 		void setState(State state) { this->state = state; }
-
-		void trx_mutex_enter();
-		void trx_mutex_exit();
-		void wait_for_lock();
+		void set_lock_state(LockState lock_state) { this->lock_state = lock_state; }
+	
+		// For transaction's mutex and condition variable.
+		void trx_mutex_enter() { trx_mutex.lock(); }
+		void trx_mutex_exit() { trx_mutex.unlock(); }
+		void trx_wait_lock() { trx_t_cv.wait(trx_mutex); trx_mutex.unlock(); }
+		void trx_wait_release() { trx_t_cv.notify_all();}
+		
+		// For aborted transaction.
+		void undo_update();
+		
 		void set_wait_lock(lock_t* wait_lock) { this->wait_lock = wait_lock; }
 		lock_t* get_wait_lock() { return wait_lock; }
 
 		const std::list<lock_t*> getAcquiredLock () const { return acquired_lock; }
 		const State getState() const { return state; }
+		const LockState getLockState() const { return lock_state; }
 		const trx_id_t getTransactionId () const { return trx_id; }
+		const std::list<undo_log> get_undo_log_list() const { return undo_log_list; }
 };
 
 

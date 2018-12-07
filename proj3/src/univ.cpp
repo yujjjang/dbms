@@ -52,7 +52,6 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node) {
  */
 
 bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_page_i) {
-	// unique_lock<mutex> buf_latch(pool.buf_pool_mutex);
 	BUF_POOL_MUTEX_ENTER;
 
 	int i = 0;
@@ -135,39 +134,31 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 	LeafPage* leaf_node;
 
 	bool get_page_latch;
-	bool granted = false;
 	int lock_req_ret;		
-
 
 	while (true) {
 
 		get_page_latch = find_leaf(table, key, &leaf_node, &buf_page_i);
-
 		if (!get_page_latch) {
 			if (buf_page_i != BUF_PAGE_MUTEX_FAIL)
 				return nullptr;
 			continue;
-		} 
-		
-		if (granted)
-			break;
-		
+		}
+	  
 		lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i);
-
+		
 		if (lock_req_ret == LOCK_SUCCESS)
 			break;
-		else if (lock_req_ret = DEADLOCK) {
+		
+		else if (lock_req_ret == DEADLOCK) {
 			release_page((Page*)leaf_node, &buf_page_i);
 			return nullptr;
+		
 		} else {
 			release_page((Page*)leaf_node, &buf_page_i);
-			trx->wait_for_lock();
-			if (trx->getState() == ABOTRED)
-				return nullptr;
-			granted = true;
+			trx->trx_wait_lock();
 		}
 	}
-
 
 	for (i = 0; i < leaf_node->num_keys; i++) {
 		if (LEAF_KEY(leaf_node, i) == key) {

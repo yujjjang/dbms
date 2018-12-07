@@ -116,12 +116,7 @@ int end_tx(int trx_id) {
 	} else {
 		end_t -> setState(NONE);
 
-		while (true) {
-			if (lm->release_lock(end_t))
-				break;
-		}
-
-		ret = tm -> deleteTransaction(trx_id);
+		ret = lm->release_lock(end_t) & tm->deleteTransaction(trx_id);
 	}
 	if (!ret)
 		PANIC("end_tx.\n");

@@ -22,12 +22,12 @@ extern BufPool pool;
 /**
 	* Lock request structure.
 	*/
-typedef struct lock_t {
-	lock_t(int table_id, trx_id_t trx_id, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i) :
+struct lock_t {
+	lock_t(int table_id, trx_t* trx, pagenum_t page_id, int64_t key, LockMode lock_mode, int buf_page_i) :
 		table_id(table_id), trx(trx), page_id(page_id), key(key), lock_mode(lock_mode), buf_page_i(buf_page_i), 
 		prev(nullptr), next(nullptr) {};
 	int table_id;
-	trx* trx;
+	trx_t* trx;
 	pagenum_t page_id;
 	int64_t key;
 	bool acquired;
@@ -37,14 +37,15 @@ typedef struct lock_t {
 	lock_t* prev;
 	lock_t* next;
 
-} lock_t;
+};
 	
-typedef struct lock_page_t {
+struct lock_page_t {
 	std::list<lock_t> lock_list;
-} lock_page_t;
+};
 
 class LockManager {
-	typedef enum {LOCK_WAITING, LOCK_GRANTED_PUSH, LOCK_GRANTED_NO_PUSH} LOCK_REQ_STATE;
+	bool lock_compatibility_matrix[2][2] = {{true, false}, {false, false}};
+
 	private:
 		DLChecker dl_checker;
 		std::mutex lock_sys_mutex;
@@ -52,14 +53,23 @@ class LockManager {
 		// The hash table keyed on "page number (id)"
 		std::unordered_map<pagenum_t, lock_page_t> lock_table;
 	
-		LOCK_REQ_STATE lock_rec_not_add_queue(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*, lock_t*);
-		
-		lock_t* lock_rec_create(trx_t*, table_id, pagenum_t, int64_t, LockMode, int, lock_t*);
-		void lock_wait_rec_add_to_queue(trx_t*, int, pagenum_t, int64_t, LockMode, int);
+		bool lock_rec_has_conflict(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*, lock_t*);
+		void lock_wait_rec_add_to_queue(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*, lock_t*);
 		void lock_granted_rec_add_to_queue(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*);
+		bool lock_rec_has_lock(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*);	
+		lock_t* lock_rec_create(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*);
+		std::vector<int> lock_wait_for(trx_t*, lock_t*, lock_t*, LockMode);
 
-		void rollback_data(int, uint64_t, trx_t*, undo_log&);
+		void rollback_data(trx_t*);
+		
+		void lock_grant(lock_t*);
+		bool still_lock_wait(lock_t*);
+
+		bool lock_mode_compatible(LockMode, LockMode);
+		
+
 		void release_lock_aborted_low(trx_t*, lock_t*);
+		void release_lock_low(trx_t*, lock_t*);
 		bool release_lock_aborted(trx_t*);
 
 	public:
@@ -67,8 +77,7 @@ class LockManager {
 		LockManager() : dl_checker() {};
 		~LockManager(){};
 		
-		bool acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode, int buf_page_i);
-		void release_lock_low(trx_t*, lock_t*);
+		int acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode, int buf_page_i);
 		bool release_lock(trx_t*); 
 };
 

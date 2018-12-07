@@ -14,6 +14,7 @@
 
 typedef int trx_id_t;
 typedef int State;
+typedef int LockState;
 typedef int LockMode;
 
 

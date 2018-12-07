@@ -1,6 +1,4 @@
 #include "bpt_internal.h"
-#include "lock.h"
-#include "trx.h"
 
 static Table tables[MAX_NUM_TABLE];
 
