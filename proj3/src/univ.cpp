@@ -139,24 +139,29 @@ int64_t* find_record(Table* table, int64_t key, trx_t* trx) {
 	while (true) {
 
 		get_page_latch = find_leaf(table, key, &leaf_node, &buf_page_i);
+		
 		if (!get_page_latch) {
 			if (buf_page_i != BUF_PAGE_MUTEX_FAIL)
 				return nullptr;
-			continue;
+			else
+				continue;
 		}
 	  
 		lock_req_ret = lock_sys.acquire_lock(trx, table->table_id, pool.pages[buf_page_i].pagenum, key, LOCK_S, buf_page_i);
 		
-		if (lock_req_ret == LOCK_SUCCESS)
+		if (lock_req_ret == LOCK_SUCCESS) {
 			break;
 		
-		else if (lock_req_ret == DEADLOCK) {
+	  } else if (lock_req_ret == DEADLOCK) {
 			release_page((Page*)leaf_node, &buf_page_i);
 			return nullptr;
 		
-		} else {
+		} else if (lock_req_ret == LOCK_WAIT) {
 			release_page((Page*)leaf_node, &buf_page_i);
 			trx->trx_wait_lock();
+		
+		} else {
+			PANIC("In find record. Unknown return value.\n");
 		}
 	}
 

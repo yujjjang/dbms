@@ -1,4 +1,4 @@
-cscope 15 $HOME/Documents/DBMS_2018_2/dbms/proj3 -q 0000000502 0000069950
+cscope 15 $HOME/Documents/DBMS_2018_2/dbms/proj3 -q 0000000502 0000070818
 	@include/bpt.h
 
 1 #i‚de‡
@@ -101,9 +101,7 @@ vÆue
 begö_tx
 ();
 
-21 
-boﬁ
- 
+21 
 íd_tx
 (
 åx_id
@@ -1475,7 +1473,7 @@ lock_ªc_has_c⁄Êi˘
 LockMode
 , , 
 lock_t
-*,Üock_t*);
+*,Üock_t**);
 
 57 
 lock_waô_ªc_add_to_queue
@@ -1519,7 +1517,7 @@ lock_ªc_has_lock
 LockMode
 , , 
 lock_t
-*);
+**);
 
 60 
 lock_t
@@ -1551,13 +1549,9 @@ LockMode
 
 63 
 rﬁlback_d©a
-(, 
-uöt64_t
-, 
+(
 åx_t
-*, 
-undo_log
-&);
+*);
 
 65 
 lock_gø¡
@@ -2439,31 +2433,41 @@ __TRX_HPP__
 	~"ty≥s.h
 "
 
-12 
+12 
+	~<uni°d.h
+>
+
+14 
 ˛ass
  
 	gLockM™agî
 ;
 
-13 
+15 
 	glock_t
 ;
 
-15 
+17 
 	sundo_log
  {
 
-16 
+18 
 undo_log
-(
+(
+èbÀ_id
+, 
+uöt64_t
+ 
+∑ge_id
+, 
 öt64_t
  
 key
 , i¡64_t* 
 ﬁd_vÆue
-) : key(key) {
+) :Åable_id(table_id),Öage_id(page_id), key(key) {
 
-17 
+19 
 mem˝y
 (
 undo_vÆue
@@ -2471,31 +2475,41 @@ undo_vÆue
 ﬁd_vÆue
 , 120);
 
-19 
+21 
+	mèbÀ_id
+;
+
+22 
+uöt64_t
+ 
+	m∑ge_id
+;
+
+23 
 öt64_t
  
 	mkey
 ;
 
-20 
+24 
 öt64_t
  
 	mundo_vÆue
 [15];
 
-23 ˛as†
+27 ˛as†
 	cåx_t
  {
 
-25 
+29 
 	m¥iv©e
 :
 
-26 
+30 
 åx_id
 ;
 
-27 
+31 
 	m°d
 ::
 li°
@@ -2505,7 +2519,7 @@ lock_t
 acquúed_lock
 ;
 
-29 
+33 
 	m°d
 ::
 muãx
@@ -2513,7 +2527,7 @@ muãx
 åx_muãx
 ;
 
-30 
+34 
 	m°d
 ::
 c⁄dôi⁄_v¨übÀ_™y
@@ -2521,7 +2535,7 @@ c⁄dôi⁄_v¨übÀ_™y
 åx_t_cv
 ;
 
-32 
+36 
 	m°d
 ::
 li°
@@ -2531,29 +2545,29 @@ undo_log
 undo_log_li°
 ;
 
-34 
+38 
 Sèã
  
 	m°©e
 ;
 
-35 
+39 
 LockSèã
  
 	mlock_°©e
 ;
 
-36 
+40 
 lock_t
 * 
 	mwaô_lock
 ;
 
-38 
+42 
 	mpublic
 :
 
-39 
+43 
 	$åx_t
 (
 åx_id_t
@@ -2567,7 +2581,7 @@ t_id
 RUNNING
 ) {};
 
-40 ~
+44 ~
 	$åx_t
 (){ 
 acquúed_lock
@@ -2579,19 +2593,35 @@ undo_log_li°
 	}
 }
 
-43 
+47 
 	$push_undo_log
-(
+(
+èbÀ_id
+, 
+uöt64_t
+ 
+∑ge_id
+, 
 öt64_t
  
 key
 , i¡64_t* 
 ﬁd_vÆue
-Ë{ 
+) {
+
+48 
 undo_log
  
 	`log
-(key, old_vÆue); 
+(
+èbÀ_id
+, 
+∑ge_id
+, 
+key
+, 
+ﬁd_vÆue
+); 
 undo_log_li°
 .
 	`push_back
@@ -2601,7 +2631,7 @@ log
 	}
 }
 
-44 
+49 
 undo_log
  
 	$p›_undo_log
@@ -2619,7 +2649,7 @@ undo_log_li°
 	}
 }
 
-47 
+52 
 	$push_acquúed_lock
 (
 lock_t
@@ -2633,7 +2663,7 @@ acquúed_lock
 	}
 }
 
-48 
+53 
 	$£tSèã
 (
 Sèã
@@ -2641,23 +2671,11 @@ Sèã
 °©e
 Ë{ 
 this
-->°©ê°©e; 
+ -> sèã = sèã; 
 	}
 }
 
-49 
-	$£t_lock_°©e
-(
-LockSèã
- 
-lock_°©e
-Ë{ 
-this
-->lock_°©êlock_°©e; 
-	}
-}
-
-52 
+56 
 	$åx_muãx_íãr
 (Ë{ 
 åx_muãx
@@ -2667,7 +2685,7 @@ this
 	}
 }
 
-53 
+57 
 	$åx_muãx_exô
 (Ë{ 
 åx_muãx
@@ -2677,7 +2695,7 @@ this
 	}
 }
 
-54 
+58 
 	$åx_waô_lock
 (Ë{ 
 åx_t_cv
@@ -2691,7 +2709,7 @@ this
 	}
 }
 
-55 
+59 
 	$åx_waô_ªÀa£
 (Ë{ 
 åx_t_cv
@@ -2701,11 +2719,11 @@ this
 	}
 }
 
-58 
+62 
 undo_upd©e
 ();
 
-60 
+64 
 	$£t_waô_lock
 (
 lock_t
@@ -2717,7 +2735,7 @@ this
 	}
 }
 
-61 
+65 
 lock_t
 * 
 	$gë_waô_lock
@@ -2727,7 +2745,7 @@ waô_lock
 	}
 }
 
-63 c⁄° 
+67 c⁄° 
 	g°d
 ::
 li°
@@ -2741,7 +2759,7 @@ acquúed_lock
 	}
 }
 
-64 c⁄° 
+68 c⁄° 
 Sèã
  
 	$gëSèã
@@ -2751,17 +2769,7 @@ Sèã
 	}
 }
 
-65 c⁄° 
-LockSèã
- 
-	$gëLockSèã
-(Ëc⁄° {  
-lock_°©e
-; 
-	}
-}
-
-66 c⁄° 
+69 c⁄° 
 åx_id_t
  
 	$gëTønß˘i⁄Id
@@ -2771,15 +2779,29 @@ lock_°©e
 	}
 }
 
-70 ˛as†
+70 c⁄° 
+	g°d
+::
+li°
+<
+undo_log
+> 
+	$gë_undo_log_li°
+(Ëc⁄° {  
+undo_log_li°
+; 
+	}
+}
+
+74 ˛as†
 	cTønß˘i⁄M™agî
  {
 
-72 
+76 
 	m¥iv©e
 :
 
-73 
+77 
 °d
 ::
 un‹dîed_m≠
@@ -2791,7 +2813,7 @@ un‹dîed_m≠
 	ma˘ive_åx
 ;
 
-74 
+78 
 	m°d
 ::
 ©omic
@@ -2799,27 +2821,27 @@ un‹dîed_m≠
 åx_id
 ;
 
-76 
+80 
 	mpublic
 :
 
-77 
+81 
 	$Tønß˘i⁄M™agî
 ():
 	$åx_id
 (0) {};
 
-79 ~
+83 ~
 	`Tønß˘i⁄M™agî
 ();
 
-81 
+85 
 åx_t
 * 
 	`makeNewTønß˘i⁄
 ();
 
-82 
+86 
 boﬁ
  
 	`dñëeTønß˘i⁄
@@ -2827,7 +2849,7 @@ boﬁ
 åx_id_t
 );
 
-84 
+88 
 °d
 ::
 un‹dîed_m≠
@@ -2843,7 +2865,7 @@ a˘ive_åx
 	}
 }
 
-85 
+89 
 åx_t
 * 
 gëTønß˘i⁄
@@ -3305,19 +3327,23 @@ ABORTED
 ªsu…
  = 0;
 
-89  
+89 *
+ªsu…
+ = 1;
+
+90  
 ªt
 ;
 
-90 
+91 
 	}
 }
 
-96 
+97 
 	$begö_tx
 () {
 
-97 
+98 
 Tønß˘i⁄M™agî
 * 
 tm
@@ -3325,7 +3351,7 @@ tm
 åx_sys
 ;
 
-98 
+99 
 åx_t
 * 
 √w_t
@@ -3335,23 +3361,23 @@ tm
 	`makeNewTønß˘i⁄
 ();
 
-99  
+100  
 √w_t
  -> 
 	`gëTønß˘i⁄Id
 ();
 
-100 
+101 
 	}
 }
 
-108 
+109 
 	$íd_tx
 (
 åx_id
 ) {
 
-109 
+110 
 Tønß˘i⁄M™agî
 * 
 tm
@@ -3359,7 +3385,7 @@ tm
 åx_sys
 ;
 
-110 
+111 
 LockM™agî
 * 
 lm
@@ -3367,7 +3393,7 @@ lm
 lock_sys
 ;
 
-112 
+113 
 åx_t
 * 
 íd_t
@@ -3379,13 +3405,13 @@ tm
 åx_id
 );
 
-113 
+114 
 boﬁ
  
 ªt
 ;
 
-114 i‡(
+115 i‡(
 íd_t
  -> 
 	`gëSèã
@@ -3393,17 +3419,17 @@ boﬁ
 ABORTED
 ) {
 
-115 
+116 
 ªt
  = 
 tm
-->
+ -> 
 	`dñëeTønß˘i⁄
 (
 åx_id
 );
 
-117 
+119 
 íd_t
  -> 
 	`£tSèã
@@ -3411,7 +3437,7 @@ tm
 NONE
 );
 
-119 
+120 
 ªt
  = 
 lm
@@ -3427,43 +3453,43 @@ tm
 åx_id
 );
 
-121 i‡(!
+123 i‡(!
 ªt
 )
 
-122 
+124 
 	`PANIC
 ("end_tx.\n");
 
-125 
+127 
 	}
 }
 
-136 
+138 
 	$¥öt_åì
 (
 èbÀ_id
 ) {
 
-137 
+139 
 off_t
 * 
 queue
 ;
 
-138 
+140 
 i
 ;
 
-139 
+141 
 ‰⁄t
  = 0;
 
-140 
+142 
 ª¨
  = 0;
 
-142 
+144 
 TabÀ
 * 
 èbÀ
@@ -3473,11 +3499,11 @@ TabÀ
 èbÀ_id
 );
 
-144 
+146 
 	`¥öt_buf_poﬁ
 ();
 
-145 i‡(
+147 i‡(
 èbÀ
 ->
 dbhódî
@@ -3485,11 +3511,11 @@ dbhódî
 roŸ_off£t
  == 0) {
 
-146 
+148 
 	`¥ötf
 ("EmptyÅree.\n");
 
-149 
+151 
 queue
  = (
 off_t
@@ -3499,7 +3525,7 @@ off_t
 BPTREE_MAX_NODE
 );
 
-151 
+153 
 queue
 [
 ª¨
@@ -3511,27 +3537,27 @@ dbhódî
 roŸ_off£t
 ;
 
-152 
+154 
 ª¨
 ++;
 
-153 
+155 
 queue
 [
 ª¨
 ] = 0;
 
-154 
+156 
 ª¨
 ++;
 
-155 
+157 
 ‰⁄t
  < 
 ª¨
 ) {
 
-156 
+158 
 off_t
  
 ∑ge_off£t
@@ -3541,41 +3567,41 @@ queue
 ‰⁄t
 ];
 
-157 
+159 
 ‰⁄t
 ++;
 
-159 i‡(
+161 i‡(
 ∑ge_off£t
  == 0) {
 
-160 
+162 
 	`¥ötf
 ("\n");
 
-162 i‡(
+164 i‡(
 ‰⁄t
  =
 ª¨
 ) ;
 
-165 
+167 
 queue
 [
 ª¨
 ] = 0;
 
-166 
+168 
 ª¨
 ++;
 
-170 
+172 
 NodePage
 * 
 node_∑ge
 ;
 
-171 
+173 
 node_∑ge
  = (
 NodePage
@@ -3589,13 +3615,13 @@ NodePage
 ∑ge_off£t
 ));
 
-172 i‡(
+174 i‡(
 node_∑ge
 ->
 is_Àaf
  == 1) {
 
-174 
+176 
 LófPage
 * 
 Àaf_node
@@ -3603,7 +3629,7 @@ LófPage
 node_∑ge
 ;
 
-175 
+177 
 i
  = 0; i < 
 Àaf_node
@@ -3611,7 +3637,7 @@ i
 num_keys
 ; i++) {
 
-176 
+178 
 	`¥ötf
 ("%" 
 PRIu64
@@ -3623,11 +3649,11 @@ PRIu64
 i
 ));
 
-178 
+180 
 	`¥ötf
 ("| ");
 
-181 
+183 
 I¡î«lPage
 * 
 öã∫Æ_node
@@ -3635,7 +3661,7 @@ I¡î«lPage
 node_∑ge
 ;
 
-182 
+184 
 i
  = 0; i < 
 öã∫Æ_node
@@ -3643,7 +3669,7 @@ i
 num_keys
 ; i++) {
 
-183 
+185 
 	`¥ötf
 ("%" 
 PRIu64
@@ -3655,7 +3681,7 @@ PRIu64
 i
 ));
 
-184 
+186 
 queue
 [
 ª¨
@@ -3667,7 +3693,7 @@ queue
 i
 );
 
-185 
+187 
 NodePage
 * 
 chûd_node
@@ -3677,7 +3703,7 @@ chûd_node
 èbÀ
 ,
 
-186 
+188 
 	`FILEOFF_TO_PAGENUM
 (
 	`INTERNAL_OFFSET
@@ -3687,7 +3713,7 @@ chûd_node
 i
 )));
 
-187 i‡(
+189 i‡(
 chûd_node
 ->
 ∑ª¡
@@ -3695,11 +3721,11 @@ chûd_node
 ∑ge_off£t
 ){
 
-188 
+190 
 	`PANIC
 ("btree structure crashed");
 
-190 
+192 
 	`ªÀa£_∑ge
 ((
 Page
@@ -3707,11 +3733,11 @@ Page
 chûd_node
 );
 
-191 
+193 
 ª¨
 ++;
 
-193 
+195 
 queue
 [
 ª¨
@@ -3723,15 +3749,15 @@ queue
 i
 );
 
-194 
+196 
 ª¨
 ++;
 
-195 
+197 
 	`¥ötf
 ("| ");
 
-197 
+199 
 	`ªÀa£_∑ge
 ((
 Page
@@ -3739,17 +3765,17 @@ Page
 node_∑ge
 );
 
-199 
+201 
 	`‰ì
 (
 queue
 );
 
-200 
+202 
 	}
 }
 
-205 
+207 
 	$föd_™d_¥öt
 (
 èbÀ_id
@@ -3759,7 +3785,7 @@ queue
 key
 ) {
 
-206 
+208 
 öt64_t
 * 
 vÆue_found
@@ -3767,7 +3793,7 @@ vÆue_found
 NULL
 ;
 
-207 
+209 
 vÆue_found
  = 
 	`föd
@@ -3777,13 +3803,13 @@ vÆue_found
 key
 );
 
-208 i‡(
+210 i‡(
 vÆue_found
  =
 NULL
 ) {
 
-209 
+211 
 	`¥ötf
 ("Rec‹dÇŸ found undî key %" 
 PRIu64
@@ -3791,43 +3817,43 @@ PRIu64
 key
 );
 
-213 
+215 
 	`‰ì
 (
 vÆue_found
 );
 
-215 
+217 
 	}
 }
 
-219 
+221 
 	$li˚n£_nŸi˚
 ( ) {
 
-220 
+222 
 	`¥ötf
 ("bpt version %s -- Copyright (C) 2010 Amittai Aviram "
 
-221 "hâp://www.amôèi.com\n", 
+223 "hâp://www.amôèi.com\n", 
 Vîsi⁄
 );
 
-222 
+224 
 	`¥ötf
 ("ThisÖrogram comes with ABSOLUTELY NO WARRANTY; for details "
 
-226 
+228 
 	}
 }
 
-230 
+232 
 	$¥öt_li˚n£
 –
 li˚n£_∑π
  ) {
 
-231 
+233 
 °¨t
 , 
 íd
@@ -3835,53 +3861,53 @@ li˚n£_∑π
 löe
 ;
 
-232 
+234 
 FILE
  * 
 Â
 ;
 
-233 
+235 
 buf„r
 [0x100];
 
-235 
+237 
 li˚n£_∑π
 ) {
 
-236 
+238 
 LICENSE_WARRANTEE
 :
 
-237 
+239 
 °¨t
  = 
 LICENSE_WARRANTEE_START
 ;
 
-238 
+240 
 íd
  = 
 LICENSE_WARRANTEE_END
 ;
 
-240 
+242 
 LICENSE_CONDITIONS
 :
 
-241 
+243 
 °¨t
  = 
 LICENSE_CONDITIONS_START
 ;
 
-242 
+244 
 íd
  = 
 LICENSE_CONDITIONS_END
 ;
 
-248 
+250 
 Â
  = 
 	`f›í
@@ -3889,41 +3915,27 @@ LICENSE_CONDITIONS_END
 LICENSE_FILE
 , "r");
 
-249 i‡(
+251 i‡(
 Â
  =
 NULL
 ) {
 
-250 
+252 
 	`≥º‹
 ("print_license: fopen");
 
-251 
+253 
 	`exô
 (
 EXIT_FAILURE
 );
 
-253 
+255 
 löe
  = 0;Üöê< 
 °¨t
 ;Üine++)
-
-254 
-	`fgës
-(
-buf„r
-, (buf„r), 
-Â
-);
-
-255  ; 
-löe
- < 
-íd
-;Üine++) {
 
 256 
 	`fgës
@@ -3933,49 +3945,63 @@ buf„r
 Â
 );
 
-257 
+257  ; 
+löe
+ < 
+íd
+;Üine++) {
+
+258 
+	`fgës
+(
+buf„r
+, (buf„r), 
+Â
+);
+
+259 
 	`¥ötf
 ("%s", 
 buf„r
 );
 
-259 
+261 
 	`f˛o£
 (
 Â
 );
 
-260 
+262 
 	}
 }
 
-264 
+266 
 	$ußge_1
 ( ) {
 
-265 
+267 
 	`¥ötf
 ("B+ Tªêo‡Ordî %d(I¡î«l).\n", 
 ‹dî_öã∫Æ
 );
 
-266 
+268 
 	`¥ötf
 ("Following Silberschatz, Korth, Sidarshan, Database Concepts, "
 
-268 
+270 
 	}
 }
 
-272 
+274 
 	$ußge_2
 ( ) {
 
-273 
+275 
 	`¥ötf
 ("Enterány ofÅhe following commandsáfterÅheÖrompt > :\n"
 
-282 
+284 
 	}
 }
 
@@ -5619,7 +5645,7 @@ dl_gøph
 £c⁄d
 );
 
-40 autÿ
+41 autÿ
 loˇl_ô
  = 
 èrj™
@@ -5629,17 +5655,15 @@ waôög_åx_id
 	`begö
 ();Üoˇl_ô !èrj™ -> waôög_åx_id.
 	`íd
-(); ++
-ô
-) {
+(); ++local_it) {
 
-41 i‡(*
+42 i‡(*
 loˇl_ô
  =
 œã°_åx_id
 ) {
 
-42 
+43 
 èrj™
  -> 
 waôög_åx_id
@@ -5649,11 +5673,11 @@ waôög_åx_id
 loˇl_ô
 );
 
-43 --
+44 --
 loˇl_ô
 ;
 
-46 
+47 
 èrj™
  -> 
 föished
@@ -5661,13 +5685,13 @@ föished
 Ál£
 ;
 
-47 
+48 
 èrj™
  -> 
 dfs_‹dî
  = -1;
 
-49 i‡(
+50 i‡(
 èrj™
  -> 
 waôög_åx_id
@@ -5675,7 +5699,7 @@ waôög_åx_id
 	`size
 () == 0) {
 
-50 
+51 
 îa£_li°
 .
 	`push_back
@@ -5685,13 +5709,13 @@ waôög_åx_id
 fú°
 );
 
-54 autÿ
+55 autÿ
 i
  : 
 îa£_li°
 )
 
-55 
+56 
 dl_gøph
 .
 	`îa£
@@ -5715,11 +5739,11 @@ cur
 
 65 
 cur
-->
+ -> 
 dfs_‹dî
- = ++
+ = ++(
 this
-->dfs_order;
+ -> dfs_order);
 
 66 
 s_èrj™
@@ -5733,23 +5757,23 @@ cur
 mö_‹dî
  = 
 cur
-->
+ -> 
 dfs_‹dî
 ;
 
-69 autÿ
+70 autÿ
 ô
  = 
 cur
-->
+ -> 
 waôög_åx_id
 .
 	`begö
-(); ià!cur->waôög_åx_id.
+(); ià!cu∏-> waôög_åx_id.
 	`íd
 (); ++it){
 
-70 i‡(
+71 i‡(
 dl_gøph
 .
 	`cou¡
@@ -5757,7 +5781,7 @@ dl_gøph
 ô
 ) != 0){
 
-71 
+72 
 èrj™_t
 * 
 √xt
@@ -5767,13 +5791,13 @@ dl_gøph
 ô
 ]);
 
-72 i‡(
+74 i‡(
 √xt
-->
+ -> 
 dfs_‹dî
  == -1)
 
-73 
+75 
 mö_‹dî
  = 
 °d
@@ -5785,13 +5809,13 @@ mö_‹dî
 √xt
 ));
 
-74 i‡(!
+76 i‡(!
 √xt
-->
+ -> 
 föished
 )
 
-75 
+77 
 mö_‹dî
  = 
 °d
@@ -5799,7 +5823,7 @@ mö_‹dî
 	`mö
 (mö_‹dî, 
 √xt
-->
+ -> 
 dfs_‹dî
 );
 
@@ -5811,15 +5835,23 @@ cy˛e_Êag
 INT_MAX
 ;
 
-82 i‡(
+84 i‡(
+cy˛e_Êag
+)
+
+85  
+INT_MAX
+;
+
+87 i‡(
 mö_‹dî
  =
 cur
-->
+ -> 
 dfs_‹dî
 ) {
 
-83 
+88 
 èrj™_t
 * 
 tmp
@@ -5827,25 +5859,25 @@ tmp
 nuŒ±r
 ;
 
-84 
+89 
 ˙t_size
  = 0;
 
-86 i‡(
+91 i‡(
 ˙t_size
  == 1)
 
-87 
+92 
 cy˛e_Êag
  = 
 åue
 ;
 
-88 
+93 
 ˙t_size
 ++;
 
-89 
+94 
 tmp
  = 
 s_èrj™
@@ -5853,19 +5885,19 @@ s_èrj™
 	`t›
 ();
 
-90 
+95 
 s_èrj™
 .
 	`p›
 ();
 
-92 i‡(
+97 i‡(
 cur
  =
 tmp
 )
 
-96 
+102 
 cur
  -> 
 föished
@@ -5873,15 +5905,15 @@ föished
 åue
 ;
 
-97  
+103  
 mö_‹dî
 ;
 
-98 
+104 
 	}
 }
 
-107 
+113 
 boﬁ
  
 	gDLCheckî
@@ -5889,7 +5921,7 @@ boﬁ
 	$is_cy˛ic
 () {
 
-108 autÿ
+114 autÿ
 ô
  = 
 dl_gøph
@@ -5899,47 +5931,47 @@ dl_gøph
 	`íd
 (); ++it) {
 
-110 i‡(
+116 i‡(
 ô
-->
+ -> 
 £c⁄d
 .
 dfs_‹dî
  == -1)
 
-111 
+117 
 	`dfs_èrj™
 (&(
 ô
-->
+ -> 
 £c⁄d
 ));
 
-113 i‡(
+119 i‡(
 cy˛e_Êag
 ) {
 
-114 
+120 
 	`öôülize_èrj™_cy˛ic
 ();
 
-115  
+121  
 åue
 ;
 
-118 
+124 
 	`öôülize_èrj™_acy˛ic
 ();
 
-119  
+125  
 Ál£
 ;
 
-120 
+126 
 	}
 }
 
-130 
+136 
 boﬁ
  
 	gDLCheckî
@@ -5955,7 +5987,7 @@ ve˘‹
 waô_f‹
 ) {
 
-132 i‡(
+138 i‡(
 dl_gøph
 .
 cou¡
@@ -5963,11 +5995,11 @@ cou¡
 åx_id
 ) != 0)
 
-133 
+139 
 PANIC
 ("In deadlock checking. TheÅransaction cannot wait for moreÅhan oneÅransaction.\n");
 
-135 
+141 
 èrj™_t
  
 cur
@@ -5975,13 +6007,13 @@ cur
 waô_f‹
 );
 
-136 
+142 
 	gœã°_åx_id
  = 
 åx_id
 ;
 
-138 
+144 
 	gdl_gøph
 [
 åx_id
@@ -5989,11 +6021,11 @@ waô_f‹
 cur
 ;
 
-140  
+146  
 is_cy˛ic
 ();
 
-150 
+156 
 	gDLCheckî
 ::
 	$dñëe_waôög_f‹_åx
@@ -6001,7 +6033,7 @@ is_cy˛ic
 åx_id
 ) {
 
-152 i‡(
+158 i‡(
 dl_gøph
 .
 	`cou¡
@@ -6009,11 +6041,11 @@ dl_gøph
 åx_id
 ) != 0)
 
-153 
+159 
 	`PANIC
-("In delete waiting forÅrx. CommittingÅransaction which is waiting for some other one.\n");
+("In delete waiting forÅrx. CommittingÅransaction cannot wait for some other one.\n");
 
-155 
+161 
 °d
 ::
 ve˘‹
@@ -6021,7 +6053,7 @@ ve˘‹
 îa£_li°
 ;
 
-156 
+162 
 èrj™_t
 * 
 èrj™
@@ -6029,7 +6061,7 @@ ve˘‹
 nuŒ±r
 ;
 
-158 autÿ
+164 autÿ
 ô
  = 
 dl_gøph
@@ -6039,7 +6071,7 @@ dl_gøph
 	`íd
 (); ++it) {
 
-159 
+165 
 èrj™
  = &(
 ô
@@ -6047,7 +6079,7 @@ dl_gøph
 £c⁄d
 );
 
-161 autÿ
+167 autÿ
 loˇl_ô
  = 
 èrj™
@@ -6061,13 +6093,13 @@ waôög_åx_id
 ô
 ) {
 
-162 i‡(*
+168 i‡(*
 loˇl_ô
  =
 åx_id
 ) {
 
-163 
+169 
 èrj™
  -> 
 waôög_åx_id
@@ -6077,11 +6109,11 @@ waôög_åx_id
 loˇl_ô
 );
 
-164 --
+170 --
 loˇl_ô
 ;
 
-167 i‡(
+173 i‡(
 èrj™
  -> 
 waôög_åx_id
@@ -6089,7 +6121,7 @@ waôög_åx_id
 	`size
 () == 0) {
 
-168 
+174 
 îa£_li°
 .
 	`push_back
@@ -6099,13 +6131,13 @@ waôög_åx_id
 fú°
 );
 
-172 autÿ
+178 autÿ
 i
  : 
 îa£_li°
 )
 
-173 
+179 
 dl_gøph
 .
 	`îa£
@@ -6113,11 +6145,11 @@ dl_gøph
 i
 );
 
-174 
+180 
 	}
 }
 
-182 
+188 
 	gDLCheckî
 ::
 	$gë_waô_lock_åx_id
@@ -6125,7 +6157,7 @@ i
 åx_id
 ) {
 
-183 i‡(
+189 i‡(
 dl_gøph
 .
 	`cou¡
@@ -6133,11 +6165,11 @@ dl_gøph
 åx_id
 ) == 0)
 
-184  
+190  
 NO_WAIT_LOCK
 ;
 
-185  
+192  
 dl_gøph
 [
 åx_id
@@ -6147,7 +6179,7 @@ waôög_åx_id
 	`back
 ();
 
-186 
+193 
 	}
 }
 
@@ -10015,7 +10047,7 @@ LockM™agî
 	glock_sys
 ;
 
-10 
+11 
 boﬁ
  
 	gLockM™agî
@@ -10033,7 +10065,7 @@ boﬁ
 ∑ge_id
 ,
 
-11 
+12 
 öt64_t
  
 key
@@ -10045,11 +10077,11 @@ mode
 buf_∑ge_i
 , 
 lock_t
-* 
+** 
 ‰⁄t_lock_±r
 ) {
 
-13 autÿ
+14 autÿ
 ô
  = 
 lock_èbÀ
@@ -10063,7 +10095,7 @@ lock_li°
 	`íd
 (); ++it) {
 
-14 i‡(
+16 i‡(
 ô
  -> 
 key
@@ -10071,57 +10103,57 @@ key
 èbÀ_id
  ==Åable_id) {
 
-15 
+17 *
 ‰⁄t_lock_±r
  = &(*
 ô
 );
 
-16 
+18 
 lock_t
 * 
 lock
- = 
+ = *
 ‰⁄t_lock_±r
-;Üock -> 
+; (lock &&Üock -> 
 acquúed
-;) {
+);) {
 
-17 i‡(
+19 i‡(
 lock
-->
+ -> 
 åx
-->
+ -> 
 	`gëTønß˘i⁄Id
-(Ë=åx->gëTønß˘i⁄Id(Ë&&Üock->
+(Ë=åx -> gëTønß˘i⁄Id(Ë&&Üock -> 
 lock_mode
  >
 mode
 ) {
 
-18  
+20  
 åue
 ;
 
-20 
+22 
 lock
  =Üock -> 
 √xt
-;
-
-23  
-Ál£
 ;
 
 25  
 Ál£
 ;
 
-26 
+27  
+Ál£
+;
+
+28 
 	}
 }
 
-33 
+35 
 lock_t
 * 
 	gLockM™agî
@@ -10139,7 +10171,7 @@ lock_t
 ∑ge_id
 ,
 
-34 
+36 
 öt64_t
  
 key
@@ -10155,7 +10187,7 @@ lock_t
 èû_lock_±r
 ) {
 
-35 
+37 
 lock_t
  
 	`lock_ªq
@@ -10173,7 +10205,7 @@ mode
 buf_∑ge_i
 );
 
-36 
+38 
 lock_èbÀ
 [
 ∑ge_id
@@ -10185,7 +10217,7 @@ lock_li°
 lock_ªq
 );
 
-37 
+39 
 lock_t
 * 
 lock_±r
@@ -10199,11 +10231,11 @@ lock_li°
 	`back
 ());
 
-39 i‡(
+41 i‡(
 èû_lock_±r
 ) {
 
-40 
+42 
 lock_±r
  -> 
 ¥ev
@@ -10211,7 +10243,7 @@ lock_±r
 èû_lock_±r
 ;
 
-41 
+43 
 èû_lock_±r
  -> 
 √xt
@@ -10219,15 +10251,15 @@ lock_±r
 lock_±r
 ;
 
-43  
+45  
 lock_±r
 ;
 
-44 
+46 
 	}
 }
 
-53 
+55 
 	gLockM™agî
 ::
 	$lock_waô_ªc_add_to_queue
@@ -10253,7 +10285,7 @@ mode
 buf_∑ge_i
 ,
 
-54 
+56 
 lock_t
 * 
 ‰⁄t_lock_±r
@@ -10261,11 +10293,11 @@ lock_t
 waô_lock
 ) {
 
-56 
+58 
 TRX_MUTEX_ENTER
 ;
 
-58 
+60 
 lock_t
 * 
 èû_lock_±r
@@ -10273,7 +10305,7 @@ lock_t
 nuŒ±r
 ;
 
-59 
+61 
 lock_t
 * 
 lock
@@ -10281,15 +10313,21 @@ lock
 ‰⁄t_lock_±r
 ;Üock !
 nuŒ±r
-;)
+;){
 
-60 
+62 
 èû_lock_±r
  = 
 lock
 ;
 
-62 
+63 
+lock
+ =Üock -> 
+√xt
+;
+
+66 
 lock_t
 * 
 lock_±r
@@ -10311,7 +10349,7 @@ buf_∑ge_i
 èû_lock_±r
 );
 
-63 
+67 
 lock_±r
  -> 
 acquúed
@@ -10319,7 +10357,7 @@ acquúed
 Ál£
 ;
 
-64 
+68 
 åx
  -> 
 	`£t_waô_lock
@@ -10327,11 +10365,11 @@ acquúed
 waô_lock
 );
 
-65 
+69 
 	}
 }
 
-74 
+78 
 	gLockM™agî
 ::
 	$lock_gø¡ed_ªc_add_to_queue
@@ -10349,21 +10387,21 @@ waô_lock
 öt64_t
  
 key
-, 
+,
+
+79 
 LockMode
  
 mode
 , 
 buf_∑ge_i
-,
-
-75 
+, 
 lock_t
 * 
 ‰⁄t_lock_±r
 ) {
 
-77 
+81 
 lock_t
 * 
 èû_lock_±r
@@ -10371,7 +10409,7 @@ lock_t
 nuŒ±r
 ;
 
-78 
+82 
 lock_t
 * 
 lock
@@ -10381,13 +10419,13 @@ lock
 nuŒ±r
 ;) {
 
-79 
+83 
 èû_lock_±r
  = 
 lock
 ;
 
-82 
+86 
 lock_t
 * 
 lock_±r
@@ -10409,7 +10447,7 @@ buf_∑ge_i
 èû_lock_±r
 );
 
-83 
+87 
 lock_±r
  -> 
 acquúed
@@ -10417,19 +10455,19 @@ acquúed
 åue
 ;
 
-84 
+88 
 åx
-->
+ -> 
 	`push_acquúed_lock
 (
 lock_±r
 );
 
-85 
+89 
 	}
 }
 
-92 
+96 
 boﬁ
  
 	gLockM™agî
@@ -10457,23 +10495,23 @@ mode
 buf_∑ge_i
 ,
 
-93 
+97 
 lock_t
 * 
 ‰⁄t_lock_±r
-,Üock_t* 
+,Üock_t** 
 waô_lock
 ) {
 
-95 i‡(!
+99 i‡(!
 ‰⁄t_lock_±r
 )
 
-96  
+100  
 Ál£
 ;
 
-98 
+102 
 lock_t
 * 
 lock
@@ -10483,7 +10521,7 @@ lock
 nuŒ±r
 ;) {
 
-99 i‡(
+103 i‡(
 lock
  -> 
 åx
@@ -10491,45 +10529,45 @@ lock
 	`gëTønß˘i⁄Id
 () !=Årx -> getTransactionId() &&
 
-100 !
+104 !
 lock_com∑tibûôy_m©rix
 [
 lock
-->
+ -> 
 lock_mode
 ][
 mode
 ]) {
 
-101 
+105 *
 waô_lock
  = 
 lock
 ;
 
-103 
+107 
 lock
  =Üock -> 
 √xt
 ;
 
-106 i‡(!
+110 i‡(*
 waô_lock
-)
+){
 
-107  
+111  
 åue
 ;
 
-109  
+114  
 Ál£
 ;
 
-110 
+115 
 	}
 }
 
-117 
+122 
 	g°d
 ::
 ve˘‹
@@ -10553,7 +10591,7 @@ LockMode
 mode
 ) {
 
-118 
+123 
 °d
 ::
 ve˘‹
@@ -10561,7 +10599,7 @@ ve˘‹
 waô_f‹
 ;
 
-120 
+125 
 lock_t
 * 
 lock
@@ -10571,7 +10609,7 @@ lock
 waô_lock
 ;) {
 
-121 i‡(
+126 i‡(
 lock
  -> 
 åx
@@ -10579,17 +10617,17 @@ lock
 	`gëTønß˘i⁄Id
 () !=Årx -> getTransactionId() &&
 
-122 !
+127 !
 lock_com∑tibûôy_m©rix
 [
 lock
-->
+ -> 
 lock_mode
 ][
 mode
 ])
 
-123 
+128 
 waô_f‹
 .
 	`push_back
@@ -10601,33 +10639,33 @@ lock
 	`gëTønß˘i⁄Id
 ());
 
-124 
+129 
 lock
  =Üock -> 
 √xt
 ;
 
-127 
+132 
 waô_f‹
 .
 	`push_back
 (
 waô_lock
-->
+ -> 
 åx
-->
+ -> 
 	`gëTønß˘i⁄Id
 ());
 
-129  
+133  
 waô_f‹
 ;
 
-130 
+134 
 	}
 }
 
-142 
+146 
 	gLockM™agî
 ::
 	$acquúe_lock
@@ -10653,11 +10691,11 @@ mode
 buf_∑ge_i
 ) {
 
-144 
+148 
 LOCK_SYS_MUTEX_ENTER
 ;
 
-146 
+150 
 TabÀ
 * 
 èbÀ
@@ -10667,15 +10705,7 @@ TabÀ
 èbÀ_id
 );
 
-147 
-Tønß˘i⁄M™agî
-* 
-tm
- = &
-åx_sys
-;
-
-149 i‡(
+152 i‡(
 åx
 ->
 	`gëSèã
@@ -10683,15 +10713,15 @@ tm
 RUNNING
 )
 
-150 
+153 
 	`PANIC
 ("CannotácquireÜock in other mode.\n");
 
-152 
+155 
 waôög_f‹_åx_id
  = -1;
 
-153 
+156 
 lock_t
 * 
 ‰⁄t_lock_±r
@@ -10699,7 +10729,7 @@ lock_t
 nuŒ±r
 ;
 
-154 
+157 
 lock_t
 * 
 waô_lock
@@ -10707,7 +10737,7 @@ waô_lock
 nuŒ±r
 ;
 
-155 
+158 
 lock_t
 * 
 lock_±r
@@ -10715,7 +10745,7 @@ lock_±r
 nuŒ±r
 ;
 
-157 i‡(
+163 i‡(
 	`lock_ªc_has_lock
 (
 åx
@@ -10729,15 +10759,15 @@ key
 mode
 , 
 buf_∑ge_i
-, 
+, &
 ‰⁄t_lock_±r
 ))
 
-158  
+164  
 LOCK_SUCCESS
 ;
 
-160 i‡(!
+170 i‡(!
 	`lock_ªc_has_c⁄Êi˘
 (
 åx
@@ -10753,11 +10783,11 @@ mode
 buf_∑ge_i
 , 
 ‰⁄t_lock_±r
-, 
+, &
 waô_lock
 )){
 
-161 
+171 
 	`lock_gø¡ed_ªc_add_to_queue
 (
 åx
@@ -10775,17 +10805,17 @@ buf_∑ge_i
 ‰⁄t_lock_±r
 );
 
-162  
+172  
 LOCK_SUCCESS
 ;
 
-165 i‡(
+180 i‡(
 dl_checkî
 .
 	`dódlock_checkög
 (
 åx
-->
+ -> 
 	`gëTønß˘i⁄Id
 (), 
 	`lock_waô_f‹
@@ -10797,25 +10827,25 @@ waô_lock
 mode
 ))) {
 
-166 
+181 
 åx
-->
+ -> 
 	`£tSèã
 (
 ABORTED
 );
 
-167 
+182 
 	`ªÀa£_lock_ab‹ãd
 (
 åx
 );
 
-168  
+183  
 DEADLOCK
 ;
 
-171 
+186 
 	`lock_waô_ªc_add_to_queue
 (
 åx
@@ -10835,19 +10865,19 @@ buf_∑ge_i
 waô_lock
 );
 
-172  
+187  
 LOCK_WAIT
 ;
 
-175 
+190 
 	`PANIC
 ("InácquireÜock. UnknownÉvent.\n");
 
-176 
+191 
 	}
 }
 
-178 
+193 
 boﬁ
  
 	gLockM™agî
@@ -10861,7 +10891,7 @@ lock_mode1
 lock_mode2
 ) {
 
-179  (
+194  (
 lock_com∑tibûôy_m©rix
 [
 lock_mode1
@@ -10869,133 +10899,11 @@ lock_mode1
 lock_mode2
 ]);
 
-180 
+195 
 	}
 }
 
-182 
-	gLockM™agî
-::
-	$rﬁlback_d©a
-(
-èbÀ_id
-, 
-uöt64_t
- 
-∑ge_id
-, 
-åx_t
-* 
-åx
-, 
-undo_log
-& 
-log
-) {
-
-184 
-BUF_POOL_MUTEX_ENTER
-;
-
-186 
-TabÀ
-* 
-èbÀ
- = 
-	`gë_èbÀ
-(
-èbÀ_id
-);
-
-188 
-buf_∑ge_i
- = 0;
-
-189 
-LófPage
-* 
-Àaf_node
- = 
-nuŒ±r
-;
-
-191 
-åue
-) {
-
-192 
-Àaf_node
- = (
-LófPage
-*)
-	`gë_∑ge
-(
-èbÀ
-, 
-∑ge_id
-, &
-buf_∑ge_i
-);
-
-193 i‡(
-Àaf_node
-)
-
-197 
-i
- = 0; i < 
-Àaf_node
-->
-num_keys
-; i++) {
-
-198 i‡(
-	`LEAF_KEY
-(
-Àaf_node
-, 
-i
-Ë=
-log
-.
-key
-) {
-
-199 
-	`mem˝y
-(
-	`LEAF_VALUE
-(
-Àaf_node
-, 
-i
-), 
-log
-.
-undo_vÆue
-, 
-SIZE_VALUE
-);
-
-200 
-	`ªÀa£_∑ge
-((
-Page
-*)
-Àaf_node
-, &
-buf_∑ge_i
-);
-
-205 
-	`PANIC
-("InÑollback_data. Cannot findÅhe given key.\n");
-
-206 
-	}
-}
-
-209 
+205 
 	gLockM™agî
 ::
 	$lock_gø¡
@@ -11005,7 +10913,7 @@ lock_t
 lock_±r
 ) {
 
-210 
+206 
 lock_±r
  -> 
 åx
@@ -11013,7 +10921,7 @@ lock_±r
 	`åx_muãx_íãr
 ();
 
-211 
+207 
 lock_±r
  -> 
 acquúed
@@ -11021,7 +10929,7 @@ acquúed
 åue
 ;
 
-212 
+208 
 lock_±r
  -> 
 åx
@@ -11029,7 +10937,7 @@ lock_±r
 	`åx_waô_ªÀa£
 ();
 
-213 
+209 
 lock_±r
  -> 
 åx
@@ -11037,7 +10945,7 @@ lock_±r
 	`åx_muãx_exô
 ();
 
-214 
+210 
 	}
 }
 
@@ -11067,13 +10975,13 @@ lock
 	`gëTønß˘i⁄Id
 ());
 
-219 i‡(
+220 i‡(
 waô_f‹_åx_id
  =
 NO_WAIT_LOCK
 ) {
 
-220 
+221 
 lock
  -> 
 åx
@@ -11083,11 +10991,11 @@ lock
 nuŒ±r
 );
 
-221  
+222  
 Ál£
 ;
 
-223 
+225 
 lock_t
 * 
 ¥ev
@@ -11097,7 +11005,7 @@ lock
 nuŒ±r
 ;) {
 
-224 i‡(
+226 i‡(
 ¥ev
  -> 
 åx
@@ -11107,7 +11015,7 @@ nuŒ±r
 waô_f‹_åx_id
 ) {
 
-225 
+227 
 lock
  -> 
 åx
@@ -11117,19 +11025,177 @@ lock
 ¥ev
 );
 
-226  
+228  
 åue
 ;
 
-230 
+232 
 	`PANIC
 ("In stillÜock wait.\n");
 
-231 
+233 
 	}
 }
 
-233 
+244 
+	gLockM™agî
+::
+	$rﬁlback_d©a
+(
+åx_t
+* 
+åx
+) {
+
+246 
+BUF_POOL_MUTEX_ENTER
+;
+
+248 
+LófPage
+* 
+Àaf_node
+ = 
+nuŒ±r
+;
+
+249 
+TabÀ
+* 
+èbÀ
+ = 
+nuŒ±r
+;
+
+250 
+°d
+::
+li°
+<
+undo_log
+> 
+undo_log_li°
+ = 
+åx
+ -> 
+	`gë_undo_log_li°
+();
+
+252 
+boﬁ
+ 
+Êag
+;
+
+253 autÿ
+rô
+ = 
+undo_log_li°
+.
+	`rbegö
+();Ñô !undo_log_li°.
+	`ªnd
+(); ++rit) {
+
+254 
+Êag
+ = 
+Ál£
+;
+
+255 
+Àaf_node
+ = 
+nuŒ±r
+;
+
+256 
+èbÀ
+ = 
+	`gë_èbÀ
+(
+rô
+ -> 
+èbÀ_id
+);
+
+257 
+Àaf_node
+ = (
+LófPage
+*)
+	`gë_∑ge
+(
+èbÀ
+, 
+rô
+ -> 
+∑ge_id
+);
+
+259 
+i
+ = 0; i < 
+Àaf_node
+ -> 
+num_keys
+; i++) {
+
+260 i‡(
+	`LEAF_KEY
+(
+Àaf_node
+, 
+i
+Ë=
+rô
+ -> 
+key
+) {
+
+261 
+	`mem˝y
+(
+	`LEAF_VALUE
+(
+Àaf_node
+, 
+i
+), 
+rô
+ -> 
+undo_vÆue
+, 
+SIZE_VALUE
+);
+
+262 
+	`ªÀa£_∑ge
+((
+Page
+*)
+Àaf_node
+);
+
+263 
+Êag
+ = 
+åue
+;
+
+267 i‡(!
+Êag
+)
+
+268 
+	`PANIC
+("InÑollback_data. Cannot findÅhe given key.\n");
+
+270 
+	}
+}
+
+280 
 	gLockM™agî
 ::
 	$ªÀa£_lock_ab‹ãd_low
@@ -11143,19 +11209,19 @@ lock_t
 lock_±r
 ) {
 
-234 
+281 
 ∑ge_id
  = 
 lock_±r
  ->Öage_id;
 
-235 i‡(
+283 i‡(
 lock_±r
  -> 
 ¥ev
 )
 
-236 
+284 
 lock_±r
  -> 
 ¥ev
@@ -11163,13 +11229,13 @@ lock_±r
 √xt
  =Üock_ptr ->Çext;
 
-237 i‡(
+285 i‡(
 lock_±r
  -> 
 √xt
 )
 
-238 
+286 
 lock_±r
  -> 
 √xt
@@ -11177,7 +11243,7 @@ lock_±r
 ¥ev
  =Üock_ptr ->Örev;
 
-240 
+288 
 lock_t
 * 
 lock
@@ -11189,7 +11255,7 @@ lock_±r
 nuŒ±r
 ;) {
 
-242 i‡(
+290 i‡(
 lock
  -> 
 åx
@@ -11201,19 +11267,19 @@ lock_±r
 	`°ûl_lock_waô
 (lock)) {
 
-243 
+291 
 	`lock_gø¡
 (
 lock
 );
 
-245 
+293 
 lock
  =Üock -> 
 √xt
 ;
 
-248 
+296 
 boﬁ
  
 Êag
@@ -11221,7 +11287,7 @@ boﬁ
 åue
 ;
 
-251 autÿ
+297 autÿ
 ô
  = 
 lock_èbÀ
@@ -11235,13 +11301,13 @@ lock_li°
 	`íd
 (); ++it) {
 
-252 i‡(&(*
+299 i‡(&(*
 ô
 Ë=
 lock_±r
 ) {
 
-253 
+300 
 lock_èbÀ
 [
 ∑ge_id
@@ -11253,25 +11319,25 @@ lock_li°
 ô
 );
 
-254 
+301 
 Êag
  = 
 Ál£
 ;
 
-260 i‡(
+306 i‡(
 Êag
 )
 
-261 
+307 
 	`PANIC
 ("InÑelease_lock_low. CannotÉraseÜock_t inÜist).\n");
 
-263 
+309 
 	}
 }
 
-273 
+318 
 boﬁ
  
 	gLockM™agî
@@ -11283,7 +11349,13 @@ boﬁ
 åx
 ) {
 
-275 c⁄° 
+319 
+	`rﬁlback_d©a
+(
+åx
+);
+
+321 c⁄° 
 °d
 ::
 li°
@@ -11293,11 +11365,11 @@ lock_t
 acquúed_lock
  = 
 åx
-->
+ -> 
 	`gëAcquúedLock
 ();
 
-276 autÿ
+323 autÿ
 rô
  = 
 acquúed_lock
@@ -11307,7 +11379,7 @@ acquúed_lock
 	`ªnd
 (); ++rit) {
 
-277 
+324 
 	`ªÀa£_lock_ab‹ãd_low
 (
 åx
@@ -11315,15 +11387,15 @@ acquúed_lock
 rô
 );
 
-279  
+327  
 åue
 ;
 
-280 
+328 
 	}
 }
 
-282 
+330 
 	gLockM™agî
 ::
 	$ªÀa£_lock_low
@@ -11337,19 +11409,19 @@ lock_t
 lock_±r
 ) {
 
-283 
+332 
 ∑ge_id
  = 
 lock_±r
  ->Öage_id;
 
-284 i‡(
+334 i‡(
 lock_±r
  -> 
 ¥ev
 )
 
-285 
+335 
 lock_±r
  -> 
 ¥ev
@@ -11357,13 +11429,13 @@ lock_±r
 √xt
  =Üock_ptr ->Çext;
 
-286 i‡(
+336 i‡(
 lock_±r
  -> 
 √xt
 )
 
-287 
+337 
 lock_±r
  -> 
 √xt
@@ -11371,7 +11443,7 @@ lock_±r
 ¥ev
  =Üock_ptr ->Örev;
 
-289 
+339 
 lock_t
 * 
 lock
@@ -11383,7 +11455,7 @@ lock_±r
 nuŒ±r
 ;) {
 
-291 i‡(
+340 i‡(
 lock
  -> 
 åx
@@ -11395,19 +11467,19 @@ lock_±r
 	`°ûl_lock_waô
 (lock)) {
 
-292 
+341 
 	`lock_gø¡
 (
 lock
 );
 
-294 
+343 
 lock
  =Üock -> 
 √xt
 ;
 
-297 
+346 
 boﬁ
  
 Êag
@@ -11415,7 +11487,7 @@ boﬁ
 åue
 ;
 
-300 autÿ
+347 autÿ
 ô
  = 
 lock_èbÀ
@@ -11429,13 +11501,13 @@ lock_li°
 	`íd
 (); ++it) {
 
-301 i‡(&(*
+348 i‡(&(*
 ô
 Ë=
 lock_±r
 ) {
 
-302 
+349 
 lock_èbÀ
 [
 ∑ge_id
@@ -11447,25 +11519,25 @@ lock_li°
 ô
 );
 
-303 
+350 
 Êag
  = 
 Ál£
 ;
 
-307 i‡(
+354 i‡(
 Êag
 )
 
-308 
+355 
 	`PANIC
 ("InÑelease_lock_low. CannotÉraseÜock_t inÜist).\n");
 
-310 
+357 
 	}
 }
 
-318 
+365 
 boﬁ
  
 	gLockM™agî
@@ -11477,11 +11549,11 @@ boﬁ
 åx
 ) {
 
-319 
+366 
 LOCK_SYS_MUTEX_ENTER
 ;
 
-322 
+368 
 dl_checkî
 .
 	`dñëe_waôög_f‹_åx
@@ -11491,7 +11563,7 @@ dl_checkî
 	`gëTønß˘i⁄Id
 ());
 
-324 c⁄° 
+370 c⁄° 
 °d
 ::
 li°
@@ -11505,7 +11577,7 @@ acquúed_lock
 	`gëAcquúedLock
 ();
 
-325 autÿ
+371 autÿ
 ô
  = 
 acquúed_lock
@@ -11515,7 +11587,7 @@ acquúed_lock
 	`íd
 (); ++it) {
 
-326 
+372 
 	`ªÀa£_lock_low
 (
 åx
@@ -11523,11 +11595,11 @@ acquúed_lock
 ô
 );
 
-328  
+374  
 åue
 ;
 
-329 
+375 
 	}
 }
 
@@ -11757,15 +11829,7 @@ EXIT_SUCCESS
 	~"b±_öã∫Æ.h
 "
 
-2 
-	~"lock.h
-"
-
-3 
-	~"åx.h
-"
-
-5 
+3 
 TabÀ
  
 	gèbÀs
@@ -11773,17 +11837,17 @@ TabÀ
 MAX_NUM_TABLE
 ];
 
-11 
+9 
 	$Æloc_èbÀ
 () {
 
-12 
+10 
 i
  = 0; i < 
 MAX_NUM_TABLE
 ; i++){
 
-13 i‡(
+11 i‡(
 èbÀs
 [
 i
@@ -11791,7 +11855,7 @@ i
 èbÀ_id
  == 0){
 
-14 
+12 
 èbÀs
 [
 i
@@ -11799,19 +11863,19 @@ i
 èbÀ_id
  = i+1;
 
-15  
+13  
 i
 +1;
 
-18 
+16 
 	`PANIC
 ("AllocÅableÜimit.");
 
-20 
+18 
 	}
 }
 
-22 
+20 
 TabÀ
 * 
 	$gë_èbÀ
@@ -11819,25 +11883,25 @@ TabÀ
 èbÀ_id
 ) {
 
-23 i‡(
+21 i‡(
 èbÀ_id
  <= 0){
 
-24 
+22 
 	`PANIC
 ("get_table");
 
-26  &
+24  &
 èbÀs
 [
 èbÀ_id
 -1];
 
-27 
+25 
 	}
 }
 
-30 
+28 
 	$›í_‹_¸óã_èbÀ_fûe
 (c⁄° * 
 fûíame
@@ -11845,23 +11909,23 @@ fûíame
 num_cﬁumn
 ) {
 
-31 
+29 
 èbÀ_id
  = 
 	`Æloc_èbÀ
 ();
 
-32 
+30 
 TabÀ
 * 
 èbÀ
 ;
 
-34 i‡(
+32 i‡(
 èbÀ_id
  <= 0){
 
-37 
+35 
 èbÀ
  = 
 	`gë_èbÀ
@@ -11869,7 +11933,7 @@ TabÀ
 èbÀ_id
 );
 
-38 
+36 
 èbÀ
 ->
 dbfûe
@@ -11881,13 +11945,13 @@ fûíame
 O_RDWR
 );
 
-39 i‡(
+37 i‡(
 èbÀ
 ->
 dbfûe
  < 0) {
 
-41 
+39 
 èbÀ
 ->
 dbfûe
@@ -11905,17 +11969,17 @@ S_IRUSR
 S_IWUSR
 );
 
-42 i‡(
+40 i‡(
 èbÀ
 ->
 dbfûe
  < 0) {
 
-43 
+41 
 	`PANIC
 ("failedÅo createÇew db file");
 
-45 
+43 
 	`öô_√w_hódî_∑ge
 (&
 èbÀ
@@ -11927,21 +11991,21 @@ dbhódî
 num_cﬁumn
 );
 
-48 
+46 
 	`lﬂd_hódî_∑ge
 (
 èbÀ
 );
 
-50  
+48  
 èbÀ_id
 ;
 
-51 
+49 
 	}
 }
 
-54 
+52 
 	$˛o£_èbÀ_fûe
 (
 TabÀ
@@ -11949,13 +12013,13 @@ TabÀ
 èbÀ
 ) {
 
-55 
+53 
 	`ªÀa£_hódî_∑ge
 (
 èbÀ
 );
 
-56 
+54 
 	`˛o£
 (
 èbÀ
@@ -11963,19 +12027,19 @@ TabÀ
 dbfûe
 );
 
-57 
+55 
 èbÀ
 ->
 dbfûe
  = 0;
 
-58 
+56 
 èbÀ
 ->
 èbÀ_id
  = 0;
 
-60 
+58 
 	}
 }
 
@@ -12022,14 +12086,18 @@ dbfûe
 >
 
 12 
+	~<io°ªam
+>
+
+13 
 	~"b±.h
 "
 
-13 
+14 
 	~"fûe.h
 "
 
-15 
+16 
 usög
  
 «me•a˚
@@ -12037,31 +12105,7 @@ usög
 	g°d
 ;
 
-16 
-	$Resu…
-(
-ª
-){
-
-17 i‡(
-ª
- != 1) {
-
-18 
-cout
- << "GOD NO" << 
-ídl
-;
-
-19 
-	`exô
-(0);
-
-21 
-	}
-}
-
-23 
+18 
 	$sh¨ed_lock
 (
 èbÀ_id
@@ -12073,7 +12117,7 @@ key
 ªsu…
 ) {
 
-24 
+19 
 öt64_t
 * 
 ªt
@@ -12088,6 +12132,40 @@ key
 , 
 ªsu…
 );
+
+20 
+cout
+ << "@@@@TRX ID : " << 
+åx_id
+ << " READ" << 
+ídl
+;
+
+21 
+i
+ = 0; i < 15; ++i)
+
+22 
+cout
+ << 
+ªt
+[
+i
+] << ' ';
+
+23 
+cout
+ << 
+ídl
+;
+
+24 
+cout
+ << "Resu… : " << *
+ªsu…
+ << 
+ídl
+;
 
 25 
 	}
@@ -12126,66 +12204,116 @@ key
 );
 
 29 
+cout
+ << "@@@@TRX ID : " << 
+åx_id
+ << "wrôe" << 
+ídl
+;
+
+30 
+cout
+ << "Rëu∫ : " << 
+ªt
+ << 
+ídl
+;
+
+31 
+cout
+ << "Resu… : " << *
+ªsu…
+ << 
+ídl
+;
+
+32 
 	}
 }
 
-31 
+34 
 	$íd_åx
 (
 åx_id
 ){
 
-32 
+35 
+i
+ = 
 	`íd_tx
 (
 åx_id
 );
 
-33 
-	}
-}
-
-35 
-	$fú°_scheduÀ_RRW
-(
-èbÀ_id
-){
-
 36 
-	}
-}
+cout
+ << "@@@@TRX ID : " << 
+åx_id
+;
 
-37 
-	$£c⁄d_scheduÀ_RWR
-(
-èbÀ_id
-){
+37 i‡(
+i
+ == -1)
 
 38 
-	}
-}
-
-39 
-	$thúd_scheduÀ_WRR
-(
-èbÀ_id
-){
+cout
+ << " ABORTED";
 
 40 
-	}
-}
+cout
+ << " COMMITTED";
 
-41 
-	$fouπh_schduÀ_WRR
-(
-èbÀ_id
-){
+41 
+cout
+ << 
+ídl
+;
 
 42 
 	}
 }
 
-45 
+44 
+	$fú°_scheduÀ_RRW
+(
+èbÀ_id
+){
+
+45 
+	}
+}
+
+46 
+	$£c⁄d_scheduÀ_RWR
+(
+èbÀ_id
+){
+
+47 
+	}
+}
+
+48 
+	$thúd_scheduÀ_WRR
+(
+èbÀ_id
+){
+
+49 
+	}
+}
+
+50 
+	$fouπh_schduÀ_WRR
+(
+èbÀ_id
+){
+
+51 
+	}
+}
+
+54 
 	$maö
 –
 ¨gc
@@ -12193,25 +12321,25 @@ key
 ¨gv
  ) {
 
-46 
+55 
+ios_ba£
+::
+	`sync_wôh_°dio
+(
+Ál£
+);
+
+56 
 öt64_t
  
 öput_key
 ;
 
-47 
+57 
 ªsu…
  = 0;
 
-48 
-öt64_t
- 
-öput_vÆue
-[
-SIZE_COLUMN
-];
-
-49 
+58 
 öt64_t
  
 f_upd©e_vÆue
@@ -12219,7 +12347,7 @@ f_upd©e_vÆue
 SIZE_COLUMN
 ];
 
-50 
+59 
 öt64_t
  
 s_upd©e_vÆue
@@ -12227,59 +12355,59 @@ s_upd©e_vÆue
 SIZE_COLUMN
 ];
 
-51 
+60 
 i
  = 0; i < 
 SIZE_COLUMN
 ; ++i){
 
-52 
+61 
 f_upd©e_vÆue
 [
 i
 ] = i;
 
-53 
+62 
 s_upd©e_vÆue
 [
 i
 ] = 100+i;
 
-56 
+65 
 èbÀ_id
 ;
 
-57 
+66 
 	`öô_db
 (1000);
 
-58 
+67 
 f_åx_id
  = 
 	`begö_tx
 ();
 
-59 
+68 
 s_åx_id
  = 
 	`begö_tx
 ();
 
-60 
+69 
 f_ªsu…
  = 0;
 
-61 
+70 
 s_ªsu…
  = 0;
 
-63 
+72 
 èbÀ_id
  = 
 	`›í_èbÀ
 ("test1_10.db", 15);
 
-65 
+74 
 thªad
  
 	`fú°_s
@@ -12293,13 +12421,13 @@ f_åx_id
 f_ªsu…
 );
 
-67 
-cout
- << "FS" << 
-ídl
-;
+75 
+fú°_s
+.
+	`joö
+();
 
-68 
+76 
 thªad
  
 	`£c⁄d_x
@@ -12315,19 +12443,11 @@ s_åx_id
 s_ªsu…
 );
 
-69 
-fú°_s
-.
-	`joö
-();
+78 
+	`u¶ìp
+(3000);
 
-70 
-cout
- << "SX" << 
-ídl
-;
-
-71 
+79 
 thªad
  
 	`fú°_x
@@ -12343,25 +12463,13 @@ f_åx_id
 f_ªsu…
 );
 
-72 
-cout
- << "FX" << 
-ídl
-;
-
-73 
+80 
 fú°_x
 .
 	`joö
 ();
 
-74 
-cout
- << "FCSTART " << 
-ídl
-;
-
-75 
+81 
 thªad
  
 	`fú°_e
@@ -12371,25 +12479,19 @@ thªad
 f_åx_id
 );
 
-76 
-cout
- << "FCDONE" << 
-ídl
-;
-
-77 
+82 
 fú°_e
 .
 	`joö
 ();
 
-78 
+83 
 £c⁄d_x
 .
 	`joö
 ();
 
-79 
+84 
 thªad
  
 	`£c⁄d_e
@@ -12399,29 +12501,23 @@ thªad
 s_åx_id
 );
 
-80 
-cout
- << "SC" << 
-ídl
-;
-
-81 
+85 
 £c⁄d_e
 .
 	`joö
 ();
 
-84 
+88 
 	`˛o£_èbÀ
 (
 èbÀ_id
 );
 
-85 
+89 
 	`shutdown_db
 ();
 
-87 
+91 
 	}
 }
 
@@ -13183,21 +13279,21 @@ key
 buf_∑ge_i
 );
 
-142 i‡(!
+143 i‡(!
 gë_∑ge_œtch
 ) {
 
-143 i‡(
+144 i‡(
 buf_∑ge_i
  !
 BUF_PAGE_MUTEX_FAIL
 )
 
-144  
+145  
 nuŒ±r
 ;
 
-148 
+150 
 lock_ªq_ªt
  = 
 lock_sys
@@ -13223,19 +13319,19 @@ key
 LOCK_S
 , buf_page_i);
 
-150 i‡(
+152 i‡(
 lock_ªq_ªt
  =
 LOCK_SUCCESS
-)
+) {
 
-153 i‡(
+155 } i‡(
 lock_ªq_ªt
  =
 DEADLOCK
 ) {
 
-154 
+156 
 	`ªÀa£_∑ge
 ((
 Page
@@ -13245,11 +13341,17 @@ Page
 buf_∑ge_i
 );
 
-155  
+157  
 nuŒ±r
 ;
 
-158 
+159 } i‡(
+lock_ªq_ªt
+ =
+LOCK_WAIT
+) {
+
+160 
 	`ªÀa£_∑ge
 ((
 Page
@@ -13259,13 +13361,17 @@ Page
 buf_∑ge_i
 );
 
-159 
+161 
 åx
 ->
 	`åx_waô_lock
 ();
 
-163 
+164 
+	`PANIC
+("In findÑecord. UnknownÑeturn value.\n");
+
+168 
 i
  = 0; i < 
 Àaf_node
@@ -13273,7 +13379,7 @@ i
 num_keys
 ; i++) {
 
-164 i‡(
+169 i‡(
 	`LEAF_KEY
 (
 Àaf_node
@@ -13283,7 +13389,7 @@ i
 key
 ) {
 
-165 
+170 
 out_vÆue
  = (
 öt64_t
@@ -13293,7 +13399,7 @@ out_vÆue
 SIZE_COLUMN
  * (int64_t));
 
-166 
+171 
 	`mem˝y
 (
 out_vÆue
@@ -13307,20 +13413,6 @@ i
 SIZE_VALUE
 );
 
-167 
-	`ªÀa£_∑ge
-((
-Page
-*)
-Àaf_node
-, &
-buf_∑ge_i
-);
-
-168  
-out_vÆue
-;
-
 172 
 	`ªÀa£_∑ge
 ((
@@ -13332,32 +13424,46 @@ buf_∑ge_i
 );
 
 173  
+out_vÆue
+;
+
+177 
+	`ªÀa£_∑ge
+((
+Page
+*)
+Àaf_node
+, &
+buf_∑ge_i
+);
+
+178  
 nuŒ±r
 ;
 
-174 
+179 
 	}
 }
 
-179 
+184 
 	$cut
 –
 Àngth
  ) {
 
-180 i‡(
+185 i‡(
 Àngth
  % 2 == 0)
 
-181  
+186  
 Àngth
 /2;
 
-183  
+188  
 Àngth
 /2 + 1;
 
-184 
+189 
 	}
 }
 
@@ -13371,7 +13477,7 @@ nuŒ±r
 	~"ty≥s.h
 "
 
-5 
+9 
 	$upd©e_ªc‹d
 (
 TabÀ
@@ -13389,35 +13495,35 @@ vÆue
 åx
 ) {
 
-6 
+10 
 i
  = 0;
 
-7 
+11 
 buf_∑ge_i
  = 0;
 
-8 
+12 
 LófPage
 * 
 Àaf_node
 ;
 
-10 
+14 
 boﬁ
  
 gë_∑ge_œtch
 ;
 
-11 
+15 
 lock_ªq_ªt
 ;
 
-14 
+18 
 åue
 ) {
 
-16 
+24 
 gë_∑ge_œtch
  = 
 	`föd_Àaf
@@ -13431,17 +13537,17 @@ key
 buf_∑ge_i
 );
 
-18 i‡(!
+26 i‡(!
 gë_∑ge_œtch
 ) {
 
-19 i‡(
+27 i‡(
 buf_∑ge_i
  !
 BUF_PAGE_MUTEX_FAIL
 )
 
-25 
+36 
 lock_ªq_ªt
  = 
 lock_sys
@@ -13464,22 +13570,22 @@ buf_∑ge_i
 , 
 key
 , 
-LOCK_S
+LOCK_X
 , buf_page_i);
 
-27 i‡(
+38 i‡(
 lock_ªq_ªt
  =
 LOCK_SUCCESS
-)
+) {
 
-30 i‡(
+41 } i‡(
 lock_ªq_ªt
  =
 DEADLOCK
 ) {
 
-31 
+42 
 	`ªÀa£_∑ge
 ((
 Page
@@ -13489,7 +13595,13 @@ Page
 buf_∑ge_i
 );
 
-35 
+45 } i‡(
+lock_ªq_ªt
+ =
+LOCK_WAIT
+) {
+
+46 
 	`ªÀa£_∑ge
 ((
 Page
@@ -13499,13 +13611,17 @@ Page
 buf_∑ge_i
 );
 
-36 
+47 
 åx
 ->
 	`åx_waô_lock
 ();
 
-40 
+50 
+	`PANIC
+("In updateÑecord. UnknownÑeturn value.\n");
+
+54 
 i
  = 0; i < 
 Àaf_node
@@ -13513,7 +13629,7 @@ i
 num_keys
 ; i++) {
 
-41 i‡(
+55 i‡(
 	`LEAF_KEY
 (
 Àaf_node
@@ -13523,21 +13639,27 @@ i
 key
 ) {
 
-42 
+56 
 åx
  -> 
 	`push_undo_log
 (
+èbÀ
+->
+èbÀ_id
+, 
 key
 , 
-	`LEAF_VALUE
-(
 Àaf_node
+ -> 
+∑gíum
 , 
+	`LEAF_VALUE
+÷óf_node, 
 i
 ));
 
-44 
+58 
 	`mem˝y
 (
 	`LEAF_VALUE
@@ -13551,7 +13673,7 @@ vÆue
 SIZE_VALUE
 );
 
-45 
+59 
 	`ªÀa£_∑ge
 ((
 Page
@@ -13561,7 +13683,7 @@ Page
 buf_∑ge_i
 );
 
-50 
+64 
 	`ªÀa£_∑ge
 ((
 Page
@@ -13571,7 +13693,7 @@ Page
 buf_∑ge_i
 );
 
-52 
+66 
 	}
 }
 

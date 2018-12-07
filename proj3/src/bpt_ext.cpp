@@ -80,12 +80,13 @@ int update(int table_id, int64_t key, int64_t* value, int trx_id, int* result) {
 	}
 
 	int ret = update_record(table, key, value, trx);
-	
+		
 	if (trx -> getState() == ABORTED) {
 		*result = 0;
 		return -1;
 	}
-	
+
+	*result = 1;
 	return ret;
 }
 
@@ -112,12 +113,13 @@ int end_tx(int trx_id) {
 	trx_t* end_t = tm -> getTransaction(trx_id);
 	bool ret;
 	if (end_t -> getState() == ABORTED) {
-		ret = tm->deleteTransaction(trx_id);
+		ret = tm -> deleteTransaction(trx_id);
+		return -1;
 	} else {
 		end_t -> setState(NONE);
-
 		ret = lm->release_lock(end_t) & tm->deleteTransaction(trx_id);
 	}
+
 	if (!ret)
 		PANIC("end_tx.\n");
 

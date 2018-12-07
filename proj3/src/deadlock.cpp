@@ -5,7 +5,7 @@
 	* Initialize all variables used in detection algorithm.
 	*/
 void DLChecker::initialize_tarjan_acyclic() {
-	while(!s_tarjan.empty())
+	while (!s_tarjan.empty())
 		s_tarjan.pop();
 	
 	dfs_order = -1;
@@ -34,10 +34,11 @@ void DLChecker::initialize_tarjan_cyclic() {
 	std::vector<int> erase_list;
 
 	tarjan_t* tarjan = nullptr;
-	//TODO : TARJAN !!
+	
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		tarjan = &(it -> second);
-		for (auto local_it = tarjan -> waiting_trx_id.begin(); local_it != tarjan -> waiting_trx_id.end(); ++it) {
+		
+		for (auto local_it = tarjan -> waiting_trx_id.begin(); local_it != tarjan -> waiting_trx_id.end(); ++local_it) {
 			if (*local_it == latest_trx_id) {
 				tarjan -> waiting_trx_id.erase(local_it);
 				--local_it;
@@ -53,7 +54,6 @@ void DLChecker::initialize_tarjan_cyclic() {
 	
 	for (auto i : erase_list)
 		dl_graph.erase(i);
-
 }
 
 /**
@@ -62,24 +62,29 @@ void DLChecker::initialize_tarjan_cyclic() {
 	*	@return (int)		: the mininum order
 	*/
 int DLChecker::dfs_tarjan(tarjan_t* cur) {
-	cur->dfs_order = ++this->dfs_order;
+	cur -> dfs_order = ++(this -> dfs_order);
 	s_tarjan.push(cur);
 
-	int min_order = cur->dfs_order;
-	for (auto it = cur->waiting_trx_id.begin(); it != cur->waiting_trx_id.end(); ++it){
+	int min_order = cur -> dfs_order;
+	
+	for (auto it = cur -> waiting_trx_id.begin(); it != cur -> waiting_trx_id.end(); ++it){
 		if (dl_graph.count(*it) != 0){
 			tarjan_t* next = &(dl_graph[*it]);	
-			if (next->dfs_order == -1)
+			
+			if (next -> dfs_order == -1)
 				min_order = std::min(min_order, dfs_tarjan(next));
-			else if (!next->finished)
-				min_order = std::min(min_order, next->dfs_order);
+			else if (!next -> finished)
+				min_order = std::min(min_order, next -> dfs_order);
+
+			if (cycle_flag)
+				return INT_MAX;
 		}
 	}
 
 	if (cycle_flag)
 		return INT_MAX;
 	
-	if (min_order == cur->dfs_order) {
+	if (min_order == cur -> dfs_order) {
 		tarjan_t* tmp = nullptr;
 		int cnt_size = 0;
 		while (1) {
@@ -93,6 +98,7 @@ int DLChecker::dfs_tarjan(tarjan_t* cur) {
 				break;
 		}
 	}
+
 	cur -> finished = true;
 	return min_order;	
 }
@@ -107,8 +113,8 @@ int DLChecker::dfs_tarjan(tarjan_t* cur) {
 bool DLChecker::is_cyclic() {
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		
-		if (it->second.dfs_order == -1)
-			dfs_tarjan(&(it->second));
+		if (it -> second.dfs_order == -1)
+			dfs_tarjan(&(it -> second));
 		
 		if (cycle_flag) {
 			initialize_tarjan_cyclic();
@@ -150,7 +156,7 @@ bool DLChecker::deadlock_checking(int trx_id, std::vector<int> wait_for) {
 void DLChecker::delete_waiting_for_trx(int trx_id) {
 	
 	if (dl_graph.count(trx_id) != 0)
-		PANIC("In delete waiting for trx. Committing transaction which is waiting for some other one.\n");
+		PANIC("In delete waiting for trx. Committing transaction cannot wait for some other one.\n");
   
 	std::vector<int> erase_list;
 	tarjan_t* tarjan = nullptr;
@@ -182,5 +188,6 @@ void DLChecker::delete_waiting_for_trx(int trx_id) {
 int DLChecker::get_wait_lock_trx_id(int trx_id) {
 	if (dl_graph.count(trx_id) == 0)
 		return NO_WAIT_LOCK;
-	return dl_graph[trx_id].waiting_trx_id.back();
+	else
+		return dl_graph[trx_id].waiting_trx_id.back();
 }

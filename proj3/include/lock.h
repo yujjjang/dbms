@@ -53,10 +53,10 @@ class LockManager {
 		// The hash table keyed on "page number (id)"
 		std::unordered_map<pagenum_t, lock_page_t> lock_table;
 	
-		bool lock_rec_has_conflict(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*, lock_t*);
+		bool lock_rec_has_conflict(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*, lock_t**);
 		void lock_wait_rec_add_to_queue(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*, lock_t*);
 		void lock_granted_rec_add_to_queue(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*);
-		bool lock_rec_has_lock(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*);	
+		bool lock_rec_has_lock(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t**);	
 		lock_t* lock_rec_create(trx_t*, int, pagenum_t, int64_t, LockMode, int, lock_t*);
 		std::vector<int> lock_wait_for(trx_t*, lock_t*, lock_t*, LockMode);
 

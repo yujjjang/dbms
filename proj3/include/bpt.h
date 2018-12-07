@@ -18,7 +18,7 @@ int64_t* find(int table_id, int64_t key, int trx_id, int* result);
 int update(int table_id, int64_t key, int64_t* value, int trx_id, int* result);
 
 int begin_tx();
-bool end_tx(int trx_id);
+int end_tx(int trx_id);
 
 void print_tree(int table_id);
 void find_and_print(int table_id, int64_t key); 

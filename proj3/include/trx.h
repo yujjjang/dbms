@@ -50,8 +50,7 @@ class trx_t {
 
 		// Push or pop the trx's locks.
 		void push_acquired_lock(lock_t* lock) { acquired_lock.push_back(lock); }
-		void setState(State state) { this->state = state; }
-		void set_lock_state(LockState lock_state) { this->lock_state = lock_state; }
+		void setState(State state) { this -> state = state; }
 	
 		// For transaction's mutex and condition variable.
 		void trx_mutex_enter() { trx_mutex.lock(); }
@@ -67,7 +66,6 @@ class trx_t {
 
 		const std::list<lock_t*> getAcquiredLock () const { return acquired_lock; }
 		const State getState() const { return state; }
-		const LockState getLockState() const { return lock_state; }
 		const trx_id_t getTransactionId () const { return trx_id; }
 		const std::list<undo_log> get_undo_log_list() const { return undo_log_list; }
 };
