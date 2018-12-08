@@ -50,7 +50,10 @@ void print_buf_pool();
 #define BUF_PAGE_MUTEX_FAIL -930209
 
 #define BUF_POOL_MUTEX_ENTER \
-	std::unique_lock<std::mutex> buf_pool_latch(pool.buf_pool_mutex);\
+	pool.buf_pool_mutex.lock();
+
+#define BUF_POOL_MUTEX_EXIT \
+	pool.buf_pool_mutex.unlock();
 
 #define BUF_PAGE_MUTEX_ENTER(i)\
 	bool ret = pool.buf_page_mutex[i].try_lock();

@@ -164,7 +164,7 @@ void DLChecker::delete_waiting_for_trx(int trx_id) {
 	for (auto it = dl_graph.begin(); it != dl_graph.end(); ++it) {
 		tarjan = &(it -> second);
 		
-		for (auto local_it = tarjan -> waiting_trx_id.begin(); local_it != tarjan -> waiting_trx_id.end(); ++it) {
+		for (auto local_it = tarjan -> waiting_trx_id.begin(); local_it != tarjan -> waiting_trx_id.end(); ++local_it) {
 			if (*local_it == trx_id) {
 				tarjan -> waiting_trx_id.erase(local_it);
 				--local_it;

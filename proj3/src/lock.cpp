@@ -56,8 +56,8 @@ void LockManager::lock_wait_rec_add_to_queue(trx_t* trx, int table_id, pagenum_t
 		lock_t* front_lock_ptr, lock_t* wait_lock) {
 
 	trx->trx_mutex_enter();
-
 	lock_t* tail_lock_ptr = nullptr;
+	
 	for (lock_t* lock = front_lock_ptr; lock != nullptr;){
 		tail_lock_ptr = lock;
 		lock = lock -> next;
@@ -81,6 +81,7 @@ void LockManager::lock_granted_rec_add_to_queue(trx_t* trx, int table_id, pagenu
 	lock_t* tail_lock_ptr = nullptr;
 	for (lock_t* lock = front_lock_ptr; lock != nullptr;) {
 		tail_lock_ptr = lock;
+		lock = lock -> next;
 	}
 
 	lock_t* lock_ptr = lock_rec_create(trx, table_id, page_id, key, mode, tail_lock_ptr);
@@ -226,7 +227,10 @@ const bool LockManager::lock_mode_stronger_or_eq(LockMode lock_mode1, LockMode l
 	*/
 void LockManager::lock_grant(lock_t* lock_ptr) {
 	lock_ptr -> trx -> trx_mutex_enter();
+	
 	lock_ptr -> acquired = true;
+	lock_ptr -> trx -> push_acquired_lock(lock_ptr);
+	
 	lock_ptr -> trx -> trx_wait_release();
 	lock_ptr -> trx -> trx_mutex_exit();
 }
@@ -292,6 +296,8 @@ void LockManager::rollback_data(trx_t* trx) {
 		if (!flag)
 			PANIC("In rollback_data. Cannot find the given key.\n");
 	}
+
+	BUF_POOL_MUTEX_EXIT;
 }
 
 /**

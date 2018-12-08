@@ -78,8 +78,10 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_pag
 
 		// Return nullptr means cannot acquire the latch on that page. [BUF_PAGE_MUTEX_ENTER_FAIL].
 		if (!nextPage) {
+			BUF_POOL_MUTEX_EXIT;
 			release_page((Page*)page);
 			*buf_page_i = BUF_PAGE_MUTEX_FAIL;
+
 			return false;
 		}
 		if (nextPage->is_leaf == 0 && nextPage->num_keys == 0){
@@ -91,7 +93,7 @@ bool find_leaf(Table* table, int64_t key, LeafPage** out_leaf_node, int* buf_pag
 	}
 
 	*out_leaf_node = (LeafPage*)page;
-
+	BUF_POOL_MUTEX_EXIT;
 	return true;
 }
 
