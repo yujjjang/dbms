@@ -1,4 +1,4 @@
-cscope 15 $HOME/Documents/DBMS_2018_2/dbms/proj3 -q 0000000500 0000070872
+cscope 15 $HOME/Documents/DBMS_2018_2/dbms/proj3 -q 0000000524 0000074356
 	@include/bpt.h
 
 1 #i‚de‡
@@ -1639,11 +1639,11 @@ boﬁ
 åx_t
 *);
 
-87 
+88 
 	#LOCK_SYS_MUTEX_ENTER
  \
 
-88 
+89 
 °d
 ::
 unique_lock
@@ -9929,13 +9929,13 @@ key
 èbÀ_id
  ==Åable_id) {
 
-17 *
+18 *
 ‰⁄t_lock_±r
  = &(*
 ô
 );
 
-18 
+20 
 lock_t
 * 
 lock
@@ -9945,7 +9945,7 @@ lock
 acquúed
 );) {
 
-19 i‡(
+21 i‡(
 lock
  -> 
 åx
@@ -9959,29 +9959,25 @@ lock_mode
 mode
 )) {
 
-20  
+22  
 åue
 ;
 
-22 
+24 
 lock
  =Üock -> 
 √xt
 ;
 
-25  
+28  
 Ál£
 ;
 
-27  
-Ál£
-;
-
-28 
+29 
 	}
 }
 
-35 
+36 
 lock_t
 * 
 	gLockM™agî
@@ -9999,7 +9995,7 @@ lock_t
 ∑ge_id
 ,
 
-36 
+37 
 öt64_t
  
 key
@@ -10013,7 +10009,7 @@ lock_t
 èû_lock_±r
 ) {
 
-37 
+38 
 lock_t
  
 	`lock_ªq
@@ -10029,7 +10025,7 @@ key
 mode
 );
 
-38 
+39 
 lock_èbÀ
 [
 ∑ge_id
@@ -10041,7 +10037,7 @@ lock_li°
 lock_ªq
 );
 
-39 
+40 
 lock_t
 * 
 lock_±r
@@ -10055,11 +10051,11 @@ lock_li°
 	`back
 ());
 
-41 i‡(
+42 i‡(
 èû_lock_±r
 ) {
 
-42 
+43 
 lock_±r
  -> 
 ¥ev
@@ -10067,7 +10063,7 @@ lock_±r
 èû_lock_±r
 ;
 
-43 
+44 
 èû_lock_±r
  -> 
 √xt
@@ -10075,15 +10071,15 @@ lock_±r
 lock_±r
 ;
 
-45  
+46  
 lock_±r
 ;
 
-46 
+47 
 	}
 }
 
-55 
+56 
 	gLockM™agî
 ::
 	$lock_waô_ªc_add_to_queue
@@ -10107,7 +10103,7 @@ LockMode
 mode
 ,
 
-56 
+57 
 lock_t
 * 
 ‰⁄t_lock_±r
@@ -10115,7 +10111,7 @@ lock_t
 waô_lock
 ) {
 
-58 
+59 
 åx
 ->
 	`åx_muãx_íãr
@@ -10129,7 +10125,7 @@ lock_t
 nuŒ±r
 ;
 
-61 
+62 
 lock_t
 * 
 lock
@@ -10139,19 +10135,19 @@ lock
 nuŒ±r
 ;){
 
-62 
+63 
 èû_lock_±r
  = 
 lock
 ;
 
-63 
+64 
 lock
  =Üock -> 
 √xt
 ;
 
-66 
+67 
 lock_t
 * 
 lock_±r
@@ -10171,7 +10167,7 @@ mode
 èû_lock_±r
 );
 
-67 
+68 
 lock_±r
  -> 
 acquúed
@@ -10179,7 +10175,7 @@ acquúed
 Ál£
 ;
 
-68 
+69 
 åx
  -> 
 	`£t_waô_lock
@@ -10187,11 +10183,11 @@ acquúed
 waô_lock
 );
 
-69 
+70 
 	}
 }
 
-78 
+79 
 	gLockM™agî
 ::
 	$lock_gø¡ed_ªc_add_to_queue
@@ -10211,7 +10207,7 @@ waô_lock
 key
 ,
 
-79 
+80 
 LockMode
  
 mode
@@ -10221,7 +10217,7 @@ lock_t
 ‰⁄t_lock_±r
 ) {
 
-81 
+82 
 lock_t
 * 
 èû_lock_±r
@@ -10229,7 +10225,7 @@ lock_t
 nuŒ±r
 ;
 
-82 
+83 
 lock_t
 * 
 lock
@@ -10239,19 +10235,19 @@ lock
 nuŒ±r
 ;) {
 
-83 
+84 
 èû_lock_±r
  = 
 lock
 ;
 
-84 
+85 
 lock
  =Üock -> 
 √xt
 ;
 
-87 
+88 
 lock_t
 * 
 lock_±r
@@ -10271,7 +10267,7 @@ mode
 èû_lock_±r
 );
 
-88 
+89 
 lock_±r
  -> 
 acquúed
@@ -10279,7 +10275,7 @@ acquúed
 åue
 ;
 
-89 
+90 
 åx
  -> 
 	`push_acquúed_lock
@@ -10287,11 +10283,11 @@ acquúed
 lock_±r
 );
 
-90 
+91 
 	}
 }
 
-97 
+98 
 boﬁ
  
 	gLockM™agî
@@ -10317,7 +10313,7 @@ LockMode
 mode
 ,
 
-98 
+99 
 lock_t
 * 
 ‰⁄t_lock_±r
@@ -10325,15 +10321,15 @@ lock_t
 waô_lock
 ) {
 
-100 i‡(!
+101 i‡(!
 ‰⁄t_lock_±r
 )
 
-101  
+102  
 Ál£
 ;
 
-103 
+104 
 lock_t
 * 
 lock
@@ -10343,7 +10339,7 @@ lock
 nuŒ±r
 ;) {
 
-104 i‡(
+105 i‡(
 lock
  -> 
 åx
@@ -10351,7 +10347,7 @@ lock
 	`gëTønß˘i⁄Id
 () !=Årx -> getTransactionId() &&
 
-105 !
+106 !
 	`lock_mode_com∑tibÀ
 (
 lock
@@ -10361,35 +10357,35 @@ lock_mode
 mode
 )) {
 
-106 *
+107 *
 waô_lock
  = 
 lock
 ;
 
-108 
+109 
 lock
  =Üock -> 
 √xt
 ;
 
-111 i‡(*
+112 i‡(*
 waô_lock
 ){
 
-112  
+113  
 åue
 ;
 
-115  
+116  
 Ál£
 ;
 
-116 
+117 
 	}
 }
 
-123 
+124 
 	g°d
 ::
 ve˘‹
@@ -10413,7 +10409,7 @@ LockMode
 mode
 ) {
 
-124 
+125 
 °d
 ::
 ve˘‹
@@ -10421,7 +10417,7 @@ ve˘‹
 waô_f‹
 ;
 
-126 
+127 
 lock_t
 * 
 lock
@@ -10431,7 +10427,7 @@ lock
 waô_lock
 ;) {
 
-127 i‡(
+128 i‡(
 lock
  -> 
 åx
@@ -10439,7 +10435,7 @@ lock
 	`gëTønß˘i⁄Id
 () !=Årx -> getTransactionId() &&
 
-128 !
+129 !
 	`lock_mode_com∑tibÀ
 (
 lock
@@ -10449,7 +10445,7 @@ lock_mode
 mode
 ))
 
-129 
+130 
 waô_f‹
 .
 	`push_back
@@ -10461,13 +10457,13 @@ lock
 	`gëTønß˘i⁄Id
 ());
 
-130 
+131 
 lock
  =Üock -> 
 √xt
 ;
 
-133 
+134 
 waô_f‹
 .
 	`push_back
@@ -10479,15 +10475,15 @@ waô_lock
 	`gëTønß˘i⁄Id
 ());
 
-134  
+135  
 waô_f‹
 ;
 
-135 
+136 
 	}
 }
 
-146 
+147 
 	gLockM™agî
 ::
 	$acquúe_lock
@@ -10511,7 +10507,7 @@ LockMode
 mode
 ) {
 
-148 
+149 
 LOCK_SYS_MUTEX_ENTER
 ;
 
@@ -10759,7 +10755,7 @@ lock_±r
 	`åx_muãx_íãr
 ();
 
-230 
+231 
 lock_±r
  -> 
 acquúed
@@ -10767,7 +10763,15 @@ acquúed
 åue
 ;
 
-231 
+232 
+lock_±r
+ -> 
+åx
+ -> 
+	`push_acquúed_lock
+(lock_ptr);
+
+234 
 lock_±r
  -> 
 åx
@@ -10775,7 +10779,7 @@ lock_±r
 	`åx_waô_ªÀa£
 ();
 
-232 
+235 
 lock_±r
  -> 
 åx
@@ -10783,11 +10787,11 @@ lock_±r
 	`åx_muãx_exô
 ();
 
-233 
+236 
 	}
 }
 
-240 
+243 
 boﬁ
  
 	gLockM™agî
@@ -10799,7 +10803,7 @@ lock_t
 lock
 ) {
 
-241 
+244 
 waô_f‹_åx_id
  = 
 dl_checkî
@@ -10813,13 +10817,13 @@ lock
 	`gëTønß˘i⁄Id
 ());
 
-243 i‡(
+246 i‡(
 waô_f‹_åx_id
  =
 NO_WAIT_LOCK
 ) {
 
-244 
+247 
 lock
  -> 
 åx
@@ -10829,11 +10833,11 @@ lock
 nuŒ±r
 );
 
-245  
+248  
 Ál£
 ;
 
-248 
+251 
 lock_t
 * 
 ¥ev
@@ -10843,7 +10847,7 @@ lock
 nuŒ±r
 ;) {
 
-249 i‡(
+252 i‡(
 ¥ev
  -> 
 åx
@@ -10853,7 +10857,7 @@ nuŒ±r
 waô_f‹_åx_id
 ) {
 
-250 
+253 
 lock
  -> 
 åx
@@ -10863,19 +10867,19 @@ lock
 ¥ev
 );
 
-251  
+254  
 åue
 ;
 
-255 
+258 
 	`PANIC
 ("In stillÜock wait.\n");
 
-256 
+259 
 	}
 }
 
-267 
+270 
 	gLockM™agî
 ::
 	$rﬁlback_d©a
@@ -10885,11 +10889,11 @@ lock
 åx
 ) {
 
-269 
+272 
 BUF_POOL_MUTEX_ENTER
 ;
 
-271 
+274 
 LófPage
 * 
 Àaf_node
@@ -10897,7 +10901,7 @@ LófPage
 nuŒ±r
 ;
 
-272 
+275 
 TabÀ
 * 
 èbÀ
@@ -10905,7 +10909,7 @@ TabÀ
 nuŒ±r
 ;
 
-273 
+276 
 °d
 ::
 li°
@@ -10919,13 +10923,13 @@ undo_log_li°
 	`gë_undo_log_li°
 ();
 
-275 
+278 
 boﬁ
  
 Êag
 ;
 
-277 autÿ
+280 autÿ
 rô
  = 
 undo_log_li°
@@ -10935,19 +10939,19 @@ undo_log_li°
 	`ªnd
 (); ++rit) {
 
-278 
+281 
 Êag
  = 
 Ál£
 ;
 
-279 
+282 
 Àaf_node
  = 
 nuŒ±r
 ;
 
-280 
+283 
 èbÀ
  = 
 	`gë_èbÀ
@@ -10957,7 +10961,7 @@ rô
 èbÀ_id
 );
 
-282 
+285 
 Àaf_node
  = (
 LófPage
@@ -10971,7 +10975,7 @@ rô
 ∑ge_id
 );
 
-284 
+287 
 i
  = 0; i < 
 Àaf_node
@@ -10979,7 +10983,7 @@ i
 num_keys
 ; i++) {
 
-285 i‡(
+288 i‡(
 	`LEAF_KEY
 (
 Àaf_node
@@ -10991,7 +10995,7 @@ rô
 key
 ) {
 
-286 
+289 
 	`mem˝y
 (
 	`LEAF_VALUE
@@ -11007,7 +11011,7 @@ undo_vÆue
 SIZE_VALUE
 );
 
-287 
+290 
 	`ªÀa£_∑ge
 ((
 Page
@@ -11015,29 +11019,29 @@ Page
 Àaf_node
 );
 
-288 
+291 
 Êag
  = 
 åue
 ;
 
-293 i‡(!
+296 i‡(!
 Êag
 )
 
-294 
+297 
 	`PANIC
 ("InÑollback_data. Cannot findÅhe given key.\n");
 
-297 
+300 
 BUF_POOL_MUTEX_EXIT
 ;
 
-298 
+301 
 	}
 }
 
-308 
+311 
 	gLockM™agî
 ::
 	$ªÀa£_lock_ab‹ãd_low
@@ -11051,19 +11055,19 @@ lock_t
 lock_±r
 ) {
 
-309 
+312 
 ∑ge_id
  = 
 lock_±r
  ->Öage_id;
 
-311 i‡(
+314 i‡(
 lock_±r
  -> 
 ¥ev
 )
 
-312 
+315 
 lock_±r
  -> 
 ¥ev
@@ -11071,13 +11075,13 @@ lock_±r
 √xt
  =Üock_ptr ->Çext;
 
-313 i‡(
+316 i‡(
 lock_±r
  -> 
 √xt
 )
 
-314 
+317 
 lock_±r
  -> 
 √xt
@@ -11085,7 +11089,7 @@ lock_±r
 ¥ev
  =Üock_ptr ->Örev;
 
-316 
+319 
 lock_t
 * 
 lock
@@ -11097,7 +11101,7 @@ lock_±r
 nuŒ±r
 ;) {
 
-317 i‡(
+320 i‡(
 lock
  -> 
 åx
@@ -11109,19 +11113,19 @@ lock_±r
 	`°ûl_lock_waô
 (lock)) {
 
-318 
+321 
 	`lock_gø¡
 (
 lock
 );
 
-320 
+323 
 lock
  =Üock -> 
 √xt
 ;
 
-323 
+326 
 boﬁ
  
 Êag
@@ -11129,7 +11133,7 @@ boﬁ
 åue
 ;
 
-325 autÿ
+328 autÿ
 ô
  = 
 lock_èbÀ
@@ -11143,13 +11147,13 @@ lock_li°
 	`íd
 (); ++it) {
 
-326 i‡(&(*
+329 i‡(&(*
 ô
 Ë=
 lock_±r
 ) {
 
-327 
+330 
 lock_èbÀ
 [
 ∑ge_id
@@ -11161,25 +11165,25 @@ lock_li°
 ô
 );
 
-328 
+331 
 Êag
  = 
 Ál£
 ;
 
-333 i‡(
+336 i‡(
 Êag
 )
 
-334 
+337 
 	`PANIC
 ("InÑelease_lock_low. CannotÉraseÜock_t inÜist).\n");
 
-336 
+339 
 	}
 }
 
-345 
+348 
 boﬁ
  
 	gLockM™agî
@@ -11191,13 +11195,13 @@ boﬁ
 åx
 ) {
 
-346 
+349 
 	`rﬁlback_d©a
 (
 åx
 );
 
-348 c⁄° 
+351 c⁄° 
 °d
 ::
 li°
@@ -11211,7 +11215,7 @@ acquúed_lock
 	`gëAcquúedLock
 ();
 
-350 autÿ
+353 autÿ
 rô
  = 
 acquúed_lock
@@ -11221,7 +11225,7 @@ acquúed_lock
 	`ªnd
 (); ++rit) {
 
-351 
+354 
 	`ªÀa£_lock_ab‹ãd_low
 (
 åx
@@ -11229,15 +11233,15 @@ acquúed_lock
 rô
 );
 
-354  
+357  
 åue
 ;
 
-355 
+358 
 	}
 }
 
-357 
+360 
 	gLockM™agî
 ::
 	$ªÀa£_lock_low
@@ -11251,19 +11255,19 @@ lock_t
 lock_±r
 ) {
 
-359 
+362 
 ∑ge_id
  = 
 lock_±r
  ->Öage_id;
 
-361 i‡(
+364 i‡(
 lock_±r
  -> 
 ¥ev
 )
 
-362 
+365 
 lock_±r
  -> 
 ¥ev
@@ -11271,13 +11275,13 @@ lock_±r
 √xt
  =Üock_ptr ->Çext;
 
-363 i‡(
+366 i‡(
 lock_±r
  -> 
 √xt
 )
 
-364 
+367 
 lock_±r
  -> 
 √xt
@@ -11285,7 +11289,7 @@ lock_±r
 ¥ev
  =Üock_ptr ->Örev;
 
-366 
+369 
 lock_t
 * 
 lock
@@ -11297,7 +11301,7 @@ lock_±r
 nuŒ±r
 ;) {
 
-367 i‡(
+370 i‡(
 lock
  -> 
 åx
@@ -11309,19 +11313,19 @@ lock_±r
 	`°ûl_lock_waô
 (lock)) {
 
-368 
+371 
 	`lock_gø¡
 (
 lock
 );
 
-370 
+373 
 lock
  =Üock -> 
 √xt
 ;
 
-373 
+376 
 boﬁ
  
 Êag
@@ -11329,7 +11333,7 @@ boﬁ
 åue
 ;
 
-375 autÿ
+378 autÿ
 ô
  = 
 lock_èbÀ
@@ -11343,13 +11347,13 @@ lock_li°
 	`íd
 (); ++it) {
 
-376 i‡(&(*
+379 i‡(&(*
 ô
 Ë=
 lock_±r
 ) {
 
-377 
+380 
 lock_èbÀ
 [
 ∑ge_id
@@ -11361,25 +11365,25 @@ lock_li°
 ô
 );
 
-378 
+381 
 Êag
  = 
 Ál£
 ;
 
-383 i‡(
+386 i‡(
 Êag
 )
 
-384 
+387 
 	`PANIC
 ("InÑelease_lock_low. CannotÉraseÜock_t inÜist).\n");
 
-386 
+389 
 	}
 }
 
-394 
+397 
 boﬁ
  
 	gLockM™agî
@@ -11391,11 +11395,11 @@ boﬁ
 åx
 ) {
 
-395 
+398 
 LOCK_SYS_MUTEX_ENTER
 ;
 
-397 
+400 
 dl_checkî
 .
 	`dñëe_waôög_f‹_åx
@@ -11405,7 +11409,7 @@ dl_checkî
 	`gëTønß˘i⁄Id
 ());
 
-399 c⁄° 
+402 c⁄° 
 °d
 ::
 li°
@@ -11419,7 +11423,7 @@ acquúed_lock
 	`gëAcquúedLock
 ();
 
-400 autÿ
+403 autÿ
 ô
  = 
 acquúed_lock
@@ -11429,7 +11433,7 @@ acquúed_lock
 	`íd
 (); ++it) {
 
-401 
+404 
 	`ªÀa£_lock_low
 (
 åx
@@ -11437,11 +11441,11 @@ acquúed_lock
 ô
 );
 
-403  
+406  
 åue
 ;
 
-404 
+407 
 	}
 }
 
@@ -11976,12 +11980,6 @@ key
 ) {
 
 22 
-cout
- << "SX" << 
-ídl
-;
-
-23 
 öt64_t
 * 
 ªt
@@ -11997,7 +11995,7 @@ key
 ªsu…
 );
 
-24 
+23 
 cout
  << "SHARED TRX ID : " << 
 åx_id
@@ -12005,11 +12003,11 @@ cout
 ídl
 ;
 
-25 
+24 
 i
  = 0; i < 15; ++i)
 
-26 
+25 
 cout
  << 
 ªt
@@ -12017,25 +12015,33 @@ cout
 i
 ] << ' ';
 
-27 
+26 
 cout
  << 
 ídl
 ;
 
+27 i‡(*
+ªsu…
+ == 0)
+
 28 
 cout
- << "Resu… : " << *
-ªsu…
- << 
+ << "Ab‹ãd Now" << 
 ídl
 ;
 
 29 
+cout
+ << "-----------" << 
+ídl
+;
+
+30 
 	}
 }
 
-31 
+32 
 	$ex˛usive_lock
 (
 èbÀ_id
@@ -12050,14 +12056,6 @@ key
 , * 
 ªsu…
 ) {
-
-32 
-cout
- << "SXX" << 
-åx_id
-<< 
-ídl
-;
 
 33 
 ªt
@@ -12083,25 +12081,33 @@ cout
 ídl
 ;
 
-35 
-cout
- << "Resu… : " << *
+35 i‡(*
 ªsu…
- << 
+ == 0)
+
+36 
+cout
+ << "Ab‹ãd Now" << 
 ídl
 ;
 
-36 
+37 
+cout
+ << "----------------" << 
+ídl
+;
+
+38 
 	}
 }
 
-38 
+40 
 	$íd_åx
 (
 åx_id
 ){
 
-39 
+41 
 i
  = 
 	`íd_tx
@@ -12109,75 +12115,35 @@ i
 åx_id
 );
 
-40 
+42 
 cout
  << "END TRX ID : " << 
 åx_id
 ;
 
-41 i‡(
+43 i‡(
 i
  == -1)
 
-42 
+44 
 cout
  << " ABORTED";
 
-44 
+46 
 cout
  << " COMMITTED";
 
-45 
+47 
 cout
- << 
+ << "----------------" << 
 ídl
 ;
 
-46 
+48 
 	}
 }
 
-48 
-	$fú°_scheduÀ_RRW
-(
-èbÀ_id
-){
-
-49 
-	}
-}
-
-50 
-	$£c⁄d_scheduÀ_RWR
-(
-èbÀ_id
-){
-
-51 
-	}
-}
-
-52 
-	$thúd_scheduÀ_WRR
-(
-èbÀ_id
-){
-
-53 
-	}
-}
-
-54 
-	$fouπh_schduÀ_WRR
-(
-èbÀ_id
-){
-
-55 
-	}
-}
-
-58 
+50 
 	$maö
 –
 ¨gc
@@ -12185,7 +12151,7 @@ cout
 ¨gv
  ) {
 
-59 
+51 
 ios_ba£
 ::
 	`sync_wôh_°dio
@@ -12193,81 +12159,87 @@ ios_ba£
 Ál£
 );
 
-60 
+52 
 öt64_t
  
 öput_key
 ;
 
-61 
+53 
 ªsu…
  = 0;
 
-62 
+54 
 i
  = 0; i < 
 SIZE_COLUMN
 ; ++i){
 
-63 
+55 
 f_upd©e_vÆue
 [
 i
-] = i;
+] = 5000+i;
 
-64 
+56 
 s_upd©e_vÆue
 [
 i
 ] = 100+i;
 
-67 
+59 
 èbÀ_id
 ;
 
-68 
+60 
 	`öô_db
 (1000);
 
-69 
+61 
 f_ªsu…
  = 0;
 
-70 
+62 
 s_ªsu…
  = 0;
 
-72 
+63 
+t_ªsu…
+ = 0;
+
+64 
+fo_ªsu…
+ = 0;
+
+66 
 èbÀ_id
  = 
 	`›í_èbÀ
 ("test1_10.db", 15);
 
-73 autÿ
+67 autÿ
 ã°1
- = [&](Ë-> 
-boﬁ
- {
+ = [&]() {
 
-75 
+68 
 cout
- << "Fú° ScheduÀ : R—1ËW—2ËW—1)" << 
+ << ">> Fú° ScheduÀ : Rec‹d 1 : R—1ËW—2ËW—1)" << 
 ídl
 ;
 
-76 
+69 
 f_åx_id
  = 
 	`begö_tx
 ();
 
-77 
+70 
 s_åx_id
  = 
 	`begö_tx
 ();
 
-79 
+72 
 thªad
  
 	`fú°_s
@@ -12281,8 +12253,68 @@ f_åx_id
 f_ªsu…
 );
 
-80 
+73 
 fú°_s
+.
+	`joö
+();
+
+74 
+thªad
+ 
+	`£c⁄d_x
+(
+ex˛usive_lock
+, 
+èbÀ_id
+, 1, 
+s_upd©e_vÆue
+, 
+s_åx_id
+, &
+s_ªsu…
+);
+
+75 
+thªad
+ 
+	`fú°_x
+(
+ex˛usive_lock
+, 
+èbÀ_id
+, 1, 
+f_upd©e_vÆue
+, 
+f_åx_id
+, &
+f_ªsu…
+);
+
+76 
+fú°_x
+.
+	`joö
+();
+
+78 
+£c⁄d_x
+.
+	`joö
+();
+
+79 
+thªad
+ 
+	`fú°_e
+(
+íd_åx
+, 
+f_åx_id
+);
+
+80 
+fú°_e
 .
 	`joö
 ();
@@ -12290,6 +12322,50 @@ fú°_s
 81 
 thªad
  
+	`£c⁄d_e
+(
+íd_åx
+, 
+s_åx_id
+);
+
+82 
+£c⁄d_e
+.
+	`joö
+();
+
+84 
+cout
+ << "<< Fú° ScheduÀ d⁄e" << 
+ídl
+;
+
+87 autÿ
+ã°2
+ = [&]() {
+
+89 
+cout
+ << ">> Sec⁄d ScheduÀ : Rec‹d 1 : W—1ËW—2ËR—1ËR—2)" << 
+ídl
+;
+
+90 
+f_åx_id
+ = 
+	`begö_tx
+();
+
+91 
+s_åx_id
+ = 
+	`begö_tx
+();
+
+92 
+thªad
+ 
 	`fú°_x
 (
 ex˛usive_lock
@@ -12303,7 +12379,13 @@ f_åx_id
 f_ªsu…
 );
 
-82 
+93 
+fú°_x
+.
+	`joö
+();
+
+94 
 thªad
  
 	`£c⁄d_x
@@ -12319,13 +12401,27 @@ s_åx_id
 s_ªsu…
 );
 
-83 
-fú°_x
+95 
+thªad
+ 
+	`fú°_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+f_åx_id
+, &
+f_ªsu…
+);
+
+96 
+fú°_s
 .
 	`joö
 ();
 
-84 
+97 
 thªad
  
 	`fú°_e
@@ -12335,80 +12431,14 @@ thªad
 f_åx_id
 );
 
-85 
+98 
 fú°_e
 .
 	`joö
 ();
 
-86 
-£c⁄d_x
-.
-	`joö
-();
-
-87 
-thªad
- 
-	`£c⁄d_e
-(
-íd_åx
-, 
-s_åx_id
-);
-
-88 
-£c⁄d_e
-.
-	`joö
-();
-
-89  
-åue
-;
-
-92 autÿ
-ã°2
- = [&](Ë-> 
-boﬁ
- {
-
-94 
-cout
- << "Sec⁄d ScheduÀ : W—1ËW—2ËR—1)" << 
-ídl
-;
-
-95 
-f_åx_id
- = 
-	`begö_tx
-();
-
-96 
-s_åx_id
- = 
-	`begö_tx
-();
-
-98 
-thªad
- 
-	`‰°_x
-(
-ex˛usive_lock
-, 
-èbÀ_id
-, 1, 
-f_upd©e_vÆue
-, 
-f_åx_id
-, &
-f_ªsu…
-);
-
 99 
-‰°_x
+£c⁄d_x
 .
 	`joö
 ();
@@ -12416,20 +12446,74 @@ f_ªsu…
 100 
 thªad
  
-	`£c⁄d_x
+	`£c⁄d_s
 (
-ex˛usive_lock
+sh¨ed_lock
 , 
 èbÀ_id
 , 1, 
-s_upd©e_vÆue
-, 
 s_åx_id
 , &
 s_ªsu…
 );
 
 101 
+£c⁄d_s
+.
+	`joö
+();
+
+102 
+thªad
+ 
+	`£c⁄d_e
+(
+íd_åx
+, 
+s_åx_id
+);
+
+103 
+£c⁄d_e
+.
+	`joö
+();
+
+104 
+cout
+ << "<< Sec⁄d scheduÀ d⁄e" << 
+ídl
+;
+
+107 autÿ
+ã°3
+ = [&](){
+
+108 
+cout
+ << ">> Thúd ScheduÀ : Rec‹d 1 : W—1Ë R—2)" << 
+ídl
+;
+
+109 
+cout
+ << ">> Rec‹d 2 : W—2Ë W—1)" << 
+ídl
+;
+
+110 
+f_åx_id
+ = 
+	`begö_tx
+();
+
+111 
+s_åx_id
+ = 
+	`begö_tx
+();
+
+112 
 thªad
  
 	`fú°_x
@@ -12445,13 +12529,75 @@ f_åx_id
 f_ªsu…
 );
 
-102 
+113 
 fú°_x
 .
 	`joö
 ();
 
-103 
+114 
+thªad
+ 
+	`£c⁄d_x
+(
+ex˛usive_lock
+, 
+èbÀ_id
+, 2, 
+s_upd©e_vÆue
+, 
+s_åx_id
+, &
+s_ªsu…
+);
+
+115 
+£c⁄d_x
+.
+	`joö
+();
+
+116 
+thªad
+ 
+	`£c⁄d_s_s2
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1,
+s_åx_id
+, &
+s_ªsu…
+);
+
+117 
+	`u¶ìp
+(5000);
+
+118 
+thªad
+ 
+	`fú°_x_2
+(
+ex˛usive_lock
+, 
+èbÀ_id
+, 2, 
+f_upd©e_vÆue
+, 
+f_åx_id
+, &
+f_ªsu…
+);
+
+119 
+fú°_x_2
+.
+	`joö
+();
+
+120 
 thªad
  
 	`fú°_e
@@ -12461,19 +12607,59 @@ thªad
 f_åx_id
 );
 
-104 
+121 
 fú°_e
 .
 	`joö
 ();
 
-105 
-£c⁄d_x
+122 
+£c⁄d_s_s2
 .
 	`joö
 ();
 
-106 
+123 
+thªad
+ 
+	`£c⁄d_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+s_åx_id
+, &
+s_ªsu…
+);
+
+124 
+£c⁄d_s
+.
+	`joö
+();
+
+125 
+thªad
+ 
+	`£c⁄d_s_2
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 2, 
+s_åx_id
+, &
+s_ªsu…
+);
+
+126 
+£c⁄d_s_2
+.
+	`joö
+();
+
+127 
 thªad
  
 	`£c⁄d_e
@@ -12483,31 +12669,489 @@ thªad
 s_åx_id
 );
 
-107 
+128 
 £c⁄d_e
 .
 	`joö
 ();
 
-108  
-åue
+129 
+cout
+ << "<< Thúd scheduÀ d⁄e" << 
+ídl
 ;
 
-110 
+132 autÿ
+ã°4
+ = [&]() {
+
+133 
+cout
+ << ">> F‹uth ScheduÀ : Rec‹d 1 : S—1ËS—2ËS—3ËW—4)" << 
+ídl
+;
+
+134 
+fi_åx_id
+ = 
+	`begö_tx
+();
+
+135 
+£_åx_id
+ = 
+	`begö_tx
+();
+
+136 
+th_åx_id
+ = 
+	`begö_tx
+();
+
+137 
+fo_åx_id
+ = 
+	`begö_tx
+();
+
+138 
+thªad
+ 
+	`fi_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+fi_åx_id
+, &
+f_ªsu…
+);
+
+140 
+fi_s
+.
+	`joö
+();
+
+141 
+thªad
+ 
+	`£_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+£_åx_id
+, &
+s_ªsu…
+);
+
+143 
+£_s
+.
+	`joö
+();
+
+144 
+thªad
+ 
+	`th_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+th_åx_id
+, &
+t_ªsu…
+);
+
+146 
+th_s
+.
+	`joö
+();
+
+147 
+thªad
+ 
+	`fo_x
+(
+ex˛usive_lock
+, 
+èbÀ_id
+, 1, 
+s_upd©e_vÆue
+, 
+fo_åx_id
+, &
+fo_ªsu…
+);
+
+149 
+thªad
+ 
+	`f_c
+(
+íd_åx
+, 
+fi_åx_id
+);
+
+151 
+f_c
+.
+	`joö
+();
+
+152 
+thªad
+ 
+	`s_c
+(
+íd_åx
+, 
+£_åx_id
+);
+
+154 
+s_c
+.
+	`joö
+();
+
+155 
+thªad
+ 
+	`t_c
+(
+íd_åx
+, 
+th_åx_id
+);
+
+157 
+t_c
+.
+	`joö
+();
+
+158 
+fo_x
+.
+	`joö
+();
+
+160 
+thªad
+ 
+	`fo_c
+(
+íd_åx
+, 
+fo_åx_id
+);
+
+161 
+fo_c
+.
+	`joö
+();
+
+162 
+cout
+ << "<< Fouπh scheduÀ d⁄e" << 
+ídl
+;
+
+166 autÿ
+ã°5
+ = [&]() {
+
+167 
+cout
+ << ">> Fi·h ScheduÀ : Rec‹d 1 : W—1ËS—2ËS—3ËS—4)" << 
+ídl
+;
+
+168 
+fi_åx_id
+ = 
+	`begö_tx
+();
+
+169 
+£_åx_id
+ = 
+	`begö_tx
+();
+
+170 
+th_åx_id
+ = 
+	`begö_tx
+();
+
+171 
+fo_åx_id
+ = 
+	`begö_tx
+();
+
+172 
+thªad
+ 
+	`fi_s
+(
+ex˛usive_lock
+, 
+èbÀ_id
+, 1, 
+f_upd©e_vÆue
+, 
+fi_åx_id
+, &
+f_ªsu…
+);
+
+174 
+fi_s
+.
+	`joö
+();
+
+176 
+thªad
+ 
+	`£_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+£_åx_id
+, &
+s_ªsu…
+);
+
+177 
+thªad
+ 
+	`th_s
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+th_åx_id
+, &
+t_ªsu…
+);
+
+178 
+thªad
+ 
+	`fo_x
+(
+sh¨ed_lock
+, 
+èbÀ_id
+, 1, 
+fo_åx_id
+, &
+fo_ªsu…
+);
+
+180 
+thªad
+ 
+	`f_c
+(
+íd_åx
+, 
+fi_åx_id
+);
+
+181 
+f_c
+.
+	`joö
+();
+
+183 
+£_s
+.
+	`joö
+();
+
+184 
+th_s
+.
+	`joö
+();
+
+185 
+fo_x
+.
+	`joö
+();
+
+186 
+thªad
+ 
+	`s_c
+(
+íd_åx
+, 
+£_åx_id
+);
+
+187 
+s_c
+.
+	`joö
+();
+
+188 
+thªad
+ 
+	`t_c
+(
+íd_åx
+, 
+th_åx_id
+);
+
+189 
+t_c
+.
+	`joö
+();
+
+190 
+thªad
+ 
+	`fo_c
+(
+íd_åx
+, 
+fo_åx_id
+);
+
+191 
+fo_c
+.
+	`joö
+();
+
+192 
+cout
+ << "<< Fi·h scheduÀ d⁄e" << 
+ídl
+;
+
+198 autÿ
+dl_ã°1
+ = [&]() {
+
+199 
+cout
+ << ">> Fú° DódLock checkî" << 
+ídl
+;
+
+200 
+fi
+ = 
+	`begö_tx
+();
+
+201 
+£
+ = 
+	`begö_tx
+();
+
+205 autÿ
+dl_ã°2
+ = [&]() {
+
+207 autÿ
+dl_ã°3
+ = [&]() {
+
+209 autÿ
+dl_ã°4
+ = [&]() {
+
+211 autÿ
+dl_ã°5
+ = [&]() {
+
+219 
 	`ã°1
 ();
 
-112 
+220 
+cout
+ << 
+ídl
+;
+
+221 
+	`ã°2
+();
+
+222 
+cout
+ << 
+ídl
+;
+
+223 
+	`ã°3
+();
+
+224 
+cout
+ << 
+ídl
+;
+
+225 
+	`ã°4
+();
+
+226 
+cout
+ << 
+ídl
+;
+
+227 
+	`ã°5
+();
+
+228 
+cout
+ << 
+ídl
+;
+
+229 
 	`˛o£_èbÀ
 (
 èbÀ_id
 );
 
-113 
+230 
 	`shutdown_db
 ();
 
-115 
+232 
 	}
 }
 

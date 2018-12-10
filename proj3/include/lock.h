@@ -82,6 +82,7 @@ class LockManager {
 		
 		int acquire_lock(trx_t*, int table_id, pagenum_t, int64_t key, LockMode lock_mode);
 		bool release_lock(trx_t*); 
+
 };
 
 #define LOCK_SYS_MUTEX_ENTER \

@@ -14,7 +14,9 @@ bool LockManager::lock_rec_has_lock(trx_t* trx, int table_id, pagenum_t page_id,
 	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
 		
 		if (it -> key == key && it -> table_id == table_id) {
+
 			*front_lock_ptr = &(*it);
+			
 			for (lock_t* lock = *front_lock_ptr; (lock && lock -> acquired);) {
 				if (lock -> trx -> getTransactionId() == trx -> getTransactionId() &&  lock_mode_stronger_or_eq(lock -> lock_mode, mode)) {
 						return true;
@@ -22,7 +24,6 @@ bool LockManager::lock_rec_has_lock(trx_t* trx, int table_id, pagenum_t page_id,
 				lock = lock -> next;
 			}
 		}
-		return false;
 	}
 	return false;
 }
@@ -111,7 +112,6 @@ bool LockManager::lock_rec_has_conflict(trx_t* trx, int table_id, pagenum_t page
 	if (*wait_lock){
 		return true;
 	}
-
 	return false;
 }
 
@@ -146,7 +146,6 @@ std::vector<int> LockManager::lock_wait_for(trx_t* trx, lock_t* front_lock_ptr, 
 int LockManager::acquire_lock(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode) {
 
 	LOCK_SYS_MUTEX_ENTER;
-
 	Table* table = get_table(table_id);
 
 	if (trx->getState() != RUNNING)
@@ -222,8 +221,8 @@ const bool LockManager::lock_mode_stronger_or_eq(LockMode lock_mode1, LockMode l
 	*
 	*@return (void).
 	*
-	* acquire transaction mutex and release wait condition.
-	* Then mutex exit.
+	* Acquire transaction mutex and release wait condition.
+	* Push current lock request in active lock list. Then mutex exit.
 	*/
 void LockManager::lock_grant(lock_t* lock_ptr) {
 	lock_ptr -> trx -> trx_mutex_enter();
@@ -305,12 +304,12 @@ void LockManager::rollback_data(trx_t* trx) {
 	*
 	*@return (void).
 	*
+	* low-level function when release the lock request.
 	* release current lock request and release possible other transactions waiting 
 	* because of this lock request.
 	*/
 void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
-	int page_id = lock_ptr -> page_id;	
-	
+	int page_id = lock_ptr -> page_id;		
 	if (lock_ptr -> prev)
 		lock_ptr -> prev -> next = lock_ptr -> next;
 	if (lock_ptr -> next)
@@ -322,7 +321,6 @@ void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
 		}
 		lock = lock -> next;
 	}
-
 	bool flag = true;
 	
 	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
@@ -341,26 +339,31 @@ void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
 /**
  * releases_lock_aborted(trx_t*)
  * trx_t*				: current transaction
- * return (bool) : true.
+ *@return (bool) : true.
  *
  * This function is called when deadlock occurs by given transaction.
  */
 bool LockManager::release_lock_aborted(trx_t* trx) {
 	rollback_data(trx);
-
 	const std::list<lock_t*> acquired_lock = trx -> getAcquiredLock();
-
+	
 	for (auto rit = acquired_lock.rbegin(); rit != acquired_lock.rend(); ++rit) {
 		release_lock_aborted_low(trx, *rit);
 	}
 
 	return true;
 }
-
+/**
+	* release_lock_low(trx_t*, lock_t*)
+	*
+	*@return (void).
+	*
+	* low-level function when release the lock request.
+  * release current lock request and release possible other transactions waiting	
+  * because of this lock request.
+  */
 void LockManager::release_lock_low(trx_t* trx, lock_t* lock_ptr) {
-	
 	int page_id = lock_ptr -> page_id;
-	
 	if (lock_ptr -> prev)
 		lock_ptr -> prev -> next = lock_ptr -> next;
 	if (lock_ptr -> next)
@@ -372,7 +375,6 @@ void LockManager::release_lock_low(trx_t* trx, lock_t* lock_ptr) {
 		}
 		lock = lock -> next;
 	}
-
 	bool flag = true;
 	
 	for (auto it = lock_table[page_id].lock_list.begin(); it != lock_table[page_id].lock_list.end(); ++it) {
