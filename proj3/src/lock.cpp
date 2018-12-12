@@ -7,7 +7,6 @@ LockManager lock_sys;
 	*
  	* @return (bool) : If enough lock request is already granted return true. Other wise return false
 	*/
-
 bool LockManager::lock_rec_has_lock(trx_t* trx, int table_id, pagenum_t page_id, 
 		int64_t key, LockMode mode, lock_t** front_lock_ptr) {
 		
@@ -66,13 +65,17 @@ void LockManager::lock_wait_rec_add_to_queue(trx_t* trx, int table_id, pagenum_t
 
 	lock_t* lock_ptr = lock_rec_create(trx, table_id, page_id, key, mode, tail_lock_ptr);
 	lock_ptr -> acquired = false;
+
+	if (trx -> get_wait_lock())
+		PANIC("In lock wait rec add to queue. It already have wait lock.\n");
+	
 	trx -> set_wait_lock(wait_lock);
 }
 
 /**
 	* lock_granted_rec_add_to_queue(trx_t*, table_id, page_id, key, mode, front_lock_ptr)
 	*
-	*@return (void).
+	* @return (void).
 	*
 	* Make new granted lock request and push in list. 
 	*/
@@ -93,7 +96,7 @@ void LockManager::lock_granted_rec_add_to_queue(trx_t* trx, int table_id, pagenu
 /**
 	* lock_rec_has_conflict(trx_t*, table_id, page_id, key, mode, front_lock_ptr, wait_lock)
 	* 
-	*@return (bool) : If there is conflict, set wait lock and return true. Otherwise return false.
+	* @return (bool) : If there is conflict, set wait lock and return true. Otherwise return false.
 	*/
 bool LockManager::lock_rec_has_conflict(trx_t* trx, int table_id, pagenum_t page_id, int64_t key, LockMode mode,
 		lock_t* front_lock_ptr, lock_t** wait_lock) {
@@ -118,7 +121,7 @@ bool LockManager::lock_rec_has_conflict(trx_t* trx, int table_id, pagenum_t page
 /**
 	* lock_wait_for(trx_t*, lock_t*, lock_t*,  mode)
 	*
-	*@return (vector<int>)  : All conflict transactions' id.
+	* @return (vector<int>)  : All conflict transactions' id.
 	*/
 std::vector<int> LockManager::lock_wait_for(trx_t* trx, lock_t* front_lock_ptr, lock_t* wait_lock, LockMode mode) {
 	std::vector<int> wait_for;
@@ -219,7 +222,7 @@ const bool LockManager::lock_mode_stronger_or_eq(LockMode lock_mode1, LockMode l
 /**
 	* lock_grant(lock_t*)
 	*
-	*@return (void).
+	* @return (void).
 	*
 	* Acquire transaction mutex and release wait condition.
 	* Push current lock request in active lock list. Then mutex exit.
@@ -237,7 +240,7 @@ void LockManager::lock_grant(lock_t* lock_ptr) {
 /**
 	* still_lock_wait(lock_t*)
 	*
-	*@return (bool) : If the lock request's transaction can be granted, return true. Otherwise return false.
+	* @return (bool) : If the lock request's transaction can be granted, return true. Otherwise return false.
 	*/
 bool LockManager::still_lock_wait(lock_t* lock) {
 	int wait_for_trx_id = dl_checker.get_wait_lock_trx_id(lock -> trx -> getTransactionId());
@@ -254,13 +257,13 @@ bool LockManager::still_lock_wait(lock_t* lock) {
 			}
 		}
 	}
-	PANIC("In still lock wait.\n");
+	PANIC("In still lock wait. This transaction should wait for other transaction but it doesn't.\n");
 }
 
 /**
 	* rollback_data(trx_t*)
 	*
-	*@return (void).
+	* @return (void).
 	*
 	* The all lock requests going to rollback are already only granted one.
 	* So only buffer pool latch is acquired in this function.
@@ -302,7 +305,7 @@ void LockManager::rollback_data(trx_t* trx) {
 /**
 	* release_lock_aborted_low(trx_t*, lock_t*)
 	*
-	*@return (void).
+	* @return (void).
 	*
 	* low-level function when release the lock request.
 	* release current lock request and release possible other transactions waiting 
@@ -332,14 +335,14 @@ void LockManager::release_lock_aborted_low(trx_t* trx, lock_t* lock_ptr) {
 	}
 
 	if (flag)
-		PANIC("In release_lock_low. Cannot erase lock_t in list).\n");
+		PANIC("In release_lock_low. Cannot erase lock request in list).\n");
 	return;
 }
 
 /**
  * releases_lock_aborted(trx_t*)
  * trx_t*				: current transaction
- *@return (bool) : true.
+ * @return (bool) : true.
  *
  * This function is called when deadlock occurs by given transaction.
  */
@@ -356,7 +359,7 @@ bool LockManager::release_lock_aborted(trx_t* trx) {
 /**
 	* release_lock_low(trx_t*, lock_t*)
 	*
-	*@return (void).
+	* @return (void).
 	*
 	* low-level function when release the lock request.
   * release current lock request and release possible other transactions waiting	
@@ -386,7 +389,7 @@ void LockManager::release_lock_low(trx_t* trx, lock_t* lock_ptr) {
 	}
 	
 	if (flag)
-		PANIC("In release_lock_low. Cannot erase lock_t in list).\n");
+		PANIC("In release_lock_low. Cannot erase lock request in list.\n");
 	return;
 }
 

@@ -106,7 +106,7 @@ int DLChecker::dfs_tarjan(tarjan_t* cur) {
 /**
 	* is_cyclic()
 	*
-	*@return (bool) : cyclic (true) or not.
+	* @return (bool) : cyclic (true) or not.
 	* Main Function in DLChecker.
 	* DeadLock detection algorithm using "tarjan's" which is used to find SCC.
 	*/
@@ -129,7 +129,7 @@ bool DLChecker::is_cyclic() {
 	* deadlock_checking(trx_id, wait_for)
 	* trx_id				: current transaction's id
 	* wait_for			: the transaction's id which current transaction is waiting for.
-	*@return (bool) : cyclic or acyclic.
+	* @return (bool) : cyclic or acyclic.
 	*
 	* This function is called when pushing lock request in list first time.
 	*/
@@ -149,7 +149,7 @@ bool DLChecker::deadlock_checking(int trx_id, std::vector<int> wait_for) {
 /**
 	* delete_waiting_for_trx(trx_id)
 	* trx_id				: current transaction's id
-	*@return (void).
+	* @return (void).
 	*
 	* This function is called when the transaction is committed.
 	*/
@@ -182,8 +182,8 @@ void DLChecker::delete_waiting_for_trx(int trx_id) {
 /**
 	* get_wait_lock_trx_id(trx_id)
 	*
-	*@return (int) : If there is no wait lock whose transaction id is same as given trx_id return NO_WAIT_LOCK.
-	*								 Otherwise return recent transaction id.
+	* @return (int) : If there is no wait lock whose transaction id is same as given trx_id return NO_WAIT_LOCK.
+	*	 				   		 	Otherwise return recent transaction id.
 	*/
 int DLChecker::get_wait_lock_trx_id(int trx_id) {
 	if (dl_graph.count(trx_id) == 0)
