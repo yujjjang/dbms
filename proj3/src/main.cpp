@@ -32,7 +32,7 @@ int main( int argc, char ** argv ) {
             break;
         case 'd':
             scanf("%" PRIu64 "", &input_key);
-            remove(table_id, input_key);
+            erase(table_id, input_key);
             print_tree(table_id);
             break;
         case 'f':

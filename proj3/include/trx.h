@@ -10,6 +10,7 @@
 #include "types.h"
 
 #include <unistd.h>
+#include <string.h>
 
 class LockManager;
 struct lock_t;
@@ -40,7 +41,11 @@ class trx_t {
 		lock_t* wait_lock;
 
 	public:
-		trx_t(trx_id_t t_id) : trx_id(t_id) , state(RUNNING) {};
+		trx_t(trx_id_t t_id) : trx_id(t_id) , state(RUNNING) , wait_lock(nullptr) {
+			acquired_lock.clear();
+			undo_log_list.clear();
+		}
+
 		~trx_t(){ acquired_lock.clear(); undo_log_list.clear(); }
 
 		// For rollback.

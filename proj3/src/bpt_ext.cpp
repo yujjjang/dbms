@@ -32,7 +32,7 @@ int insert(int table_id, int64_t key, int64_t* value) {
 
 /* Deletes a record.
  */
-int remove(int table_id, int64_t key) {
+int erase(int table_id, int64_t key) {
     Table* table = get_table(table_id);
     return delete_record(table, key);
 }

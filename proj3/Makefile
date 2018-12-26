@@ -41,13 +41,13 @@ TEST=test
 all: $(TARGET)
 
 $(TARGET): $(TARGET_OBJ) $(STATIC_LIB)
-	$(CXX) $(CXXFLAGS) $< -o $@ -L $(LIBS) -lbpt
+	$(CXX) $(CXXFLAGS) $< -o $@ -L $(LIBS) -lbpt -lpthread
 
 %.o:	%.cpp
 	$(CXX) $(CXXFLAGS) $^ -c -o $@
 
 test: $(TEST_OBJ) $(STATIC_LIB)
-	$(CXX) $(CXXFLAG) $< -o $@ -L $(LIBS) -lbpt
+	$(CXX) $(CXXFLAG) $< -o $@ -L $(LIBS) -lbpt -lpthread
 
 clean:
 	rm -rf $(TEST) $(TEST_OBJ) $(TARGET) $(TARGET_OBJ) $(OBJS_FOR_LIB) $(LIBS)*

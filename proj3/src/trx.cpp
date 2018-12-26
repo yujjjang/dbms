@@ -13,7 +13,7 @@ TransactionManager::~TransactionManager() {
 trx_t* TransactionManager::makeNewTransaction() {
 	trx_t* new_trx = new trx_t(trx_id++);
 	active_trx[new_trx->getTransactionId()] = new_trx;
-	return new_trx;
+	return active_trx[new_trx->getTransactionId()];
 }
 
 trx_t* TransactionManager::getTransaction(trx_id_t trx_id) {

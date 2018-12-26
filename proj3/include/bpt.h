@@ -11,7 +11,7 @@ int close_table(int table_id);
 // Add trx_id in parameter.
 int64_t* find(int table_id, int64_t key);
 int insert(int table_id, int64_t key, int64_t* value);
-int remove(int table_id, int64_t key);
+int erase(int table_id, int64_t key);
 
 // API for transaction.
 int64_t* find(int table_id, int64_t key, int trx_id, int* result);
