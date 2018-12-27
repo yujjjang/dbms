@@ -14,7 +14,8 @@ bool LockManager::lock_rec_has_lock(trx_t* trx, int table_id, pagenum_t page_id,
 		
 		if (it -> key == key && it -> table_id == table_id) {
 
-			*front_lock_ptr = &(*it);
+			if (!front_lock_ptr)
+				*front_lock_ptr = &(*it);
 			
 			for (lock_t* lock = *front_lock_ptr; (lock && lock -> acquired);) {
 				if (lock -> trx -> getTransactionId() == trx -> getTransactionId() &&  lock_mode_stronger_or_eq(lock -> lock_mode, mode)) {

@@ -52,7 +52,7 @@ int update_record(Table* table, int64_t key, int64_t* value, trx_t* trx) {
 
 	for (i = 0; i < leaf_node->num_keys; i++) {
 		if (LEAF_KEY(leaf_node, i) == key) {
-			trx -> push_undo_log(table->table_id, key, leaf_node -> pagenum, LEAF_VALUE(leaf_node, i));
+			trx -> push_undo_log(table->table_id, leaf_node -> pagenum, key, LEAF_VALUE(leaf_node, i));
 
 			memcpy(LEAF_VALUE(leaf_node, i), value, SIZE_VALUE);
 			release_page((Page*)leaf_node, &buf_page_i);

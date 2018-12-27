@@ -113,11 +113,15 @@ int main( int argc, char ** argv ) {
 		}
 
 		thread t3_x(exclusive_lock, table_id, 1, f_update_value, t3, &t_result);
-
+		
+		usleep(1000000);
+		
 		thread t1_c(end_trx, t1, &f_i);
 		t1_c.join();
+		cout << " Fin" << endl;
 		thread t2_c(end_trx, t2, &f_i);
 		t2_c.join();
+
 		t3_x.join();
 		if(t_result == 0)
 			cout << "ERERE" << endl;
@@ -248,13 +252,13 @@ int main( int argc, char ** argv ) {
 			cout << "Err" << endl;
 	};
 	
-	TEST1();
-	TEST2();
+	/*TEST1();
+	TEST2();*/
 	TEST3();
-	TEST4();
+	/*TEST4();
 	DL_TEST1();
 	DL_TEST2();
-	DL_TEST3();
+	DL_TEST3();*/
 
 	close_table(table_id);
 	shutdown_db();
